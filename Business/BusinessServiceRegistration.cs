@@ -27,6 +27,8 @@ namespace Business
             services.AddTransient<IPaymentService, PaymentService>();
             services.AddTransient<IRoomService, RoomService>();
             services.AddTransient<IReservationService, ReservationService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IAuthService,AuthService>();
             services.AddAutoMapper(typeof(BusinessServiceRegistration));
             return services;
         }

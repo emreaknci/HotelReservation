@@ -2,6 +2,8 @@
 using Core.Entities;
 using Core.Utils.Results;
 using Entities.Rooms;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,7 +47,18 @@ namespace WebAPI.Controllers
                 : BadRequest(result.Message);
         }
 
+        [HttpGet("pagination")]
+        public IActionResult GetAllRoomsWithPagination([FromQuery] BasePaginationRequest req)
+        {
+            var result = _roomService.GetAllPagination(req);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+
+
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddRoom([FromBody] CreateRoomDto room)
         {
             var result = await _roomService.AddAsync(room);
@@ -55,6 +68,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("addrange")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddRooms([FromBody] List<CreateRoomDto> rooms)
         {
             var result = await _roomService.AddRangeAsync(rooms);
@@ -64,6 +78,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> UpdateRoom([FromBody] UpdateRoomDto room)
         {
             var result = await _roomService.Update(room);
@@ -73,6 +88,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut("updaterange")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> UpdateRooms([FromBody] List<UpdateRoomDto> rooms)
         {
             var result = await _roomService.UpdateRange(rooms);
@@ -82,6 +98,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveRoom([FromBody] RemoveRoomDto room)
         {
             var result = await _roomService.Remove(room);
@@ -91,6 +108,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveRoomById(int id)
         {
             var result = await _roomService.RemoveById(id);
@@ -100,18 +118,10 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete("removerange")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveRooms([FromBody] List<RemoveRoomDto> rooms)
         {
             var result = await _roomService.RemoveRange(rooms);
-            return result.Success
-                ? Ok(result)
-                : BadRequest(result.Message);
-        }
-
-        [HttpGet("pagination")]
-        public IActionResult GetAllRoomsWithPagination([FromQuery] BasePaginationRequest req)
-        {
-            var result = _roomService.GetAllPagination(req);
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);

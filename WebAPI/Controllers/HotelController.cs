@@ -1,6 +1,8 @@
 ﻿using Business.Abstract;
 using Core.Entities;
 using Entities.Hotels;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +20,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet]
+
         public IActionResult GetAll()
         {
             var result = _hotelService.GetAll();
@@ -35,7 +38,16 @@ namespace WebAPI.Controllers
                 : NotFound(result.Message);
         }
 
+        [HttpPost("pagination")]
+        public IActionResult GetAllPagination([FromBody] BasePaginationRequest req)
+        {
+            var result = _hotelService.GetAllPagination(req);
+            return result.Success
+                 ? Ok(result)
+                 : BadRequest(result.Message);
+        }
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddAsync([FromBody] CreateHotelDto hotel)
         {
             var result = await _hotelService.AddAsync(hotel);
@@ -45,6 +57,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("addrange")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddRangeAsync([FromBody] List<CreateHotelDto> hotels)
         {
             var result = await _hotelService.AddRangeAsync(hotels);
@@ -54,6 +67,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateHotelDto hotel)
         {
             var result = await _hotelService.Update(hotel);
@@ -63,6 +77,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut("updaterange")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> UpdateRange([FromBody] List<UpdateHotelDto> hotels)
         {
             var result = await _hotelService.UpdateRange(hotels);
@@ -72,6 +87,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete()]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> Remove(RemoveHotelDto hotel)
         {
             var result = await _hotelService.Remove(hotel);
@@ -81,6 +97,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveById(int id)
         {
             var result = await _hotelService.RemoveById(id);
@@ -90,21 +107,13 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete("removerange")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveRange([FromBody] List<RemoveHotelDto> hotels)
         {
             var result = await _hotelService.RemoveRange(hotels);
             return result.Success
                 ? Ok(result.Data)
                 : BadRequest(result.Message);
-        }
-
-        [HttpPost("pagination")]
-        public IActionResult GetAllPagination([FromBody] BasePaginationRequest req)
-        {
-            var result = _hotelService.GetAllPagination(req);
-            return result.Success
-                 ? Ok(result)
-                 : BadRequest(result.Message);
         }
     }
 }
