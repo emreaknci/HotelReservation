@@ -1,13 +1,12 @@
-﻿using Entities.Customers;
+﻿using Core.Entities;
 using Entities.Hotels;
 using Entities.Payments;
 using Entities.Rooms;
 
 namespace Entities.Reservations
 {
-    public class Reservation
+    public class Reservation : BaseEntity
     {
-        public int Id { get; set; }
         public DateTime? CheckInDate { get; set; }
         public DateTime? CheckOutDate { get; set; }
 
@@ -18,9 +17,10 @@ namespace Entities.Reservations
         public Room? Room { get; set; }
 
         public int CustomerId { get; set; }
-        public Customer? Customer { get; set; }
+        public AppUser? Customer { get; set; }
 
         public Payment? Payment { get; set; }
+
     }
 
 }

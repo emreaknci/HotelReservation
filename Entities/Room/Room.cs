@@ -1,14 +1,26 @@
-﻿using Entities.Hotels;
+﻿using Core.Entities;
+using Entities.Hotels;
 
 namespace Entities.Rooms
 {
-    public class Room
+    public class Room:BaseEntity
     {
-        public int Id { get; set; }
-        public string? Type { get; set; }
+        public RoomType Type { get; set; }
+        public int? Capacity { get; set; }
+        public int? Price { get; set; }
+        public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
+        public bool? IsAvailable { get; set; }
+        public string? Name { get; set; }
 
         public int HotelId { get; set; }
         public Hotel? Hotel { get; set; }
+    }
+    public enum RoomType
+    {
+        Standard,
+        Deluxe,
+        Suite,
     }
 
 }
