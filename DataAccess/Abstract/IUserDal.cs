@@ -11,4 +11,5 @@ namespace DataAccess.Abstract
     public interface IUserDal : IGenericRepository<AppUser>
     {
     }
+
 }

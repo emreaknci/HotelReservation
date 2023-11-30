@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DataAccess.Abstract;
+using DataAccess.Concrete;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -17,12 +19,12 @@ namespace DataAccess
             services.AddDbContext<HotelReservationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("PostgreSQL")));
 
-            //services.AddTransient<IUserDal, UserDal>();
-            //services.AddTransient<IRoleDal, RoleDal>();
-            //services.AddTransient<IWriterDal, WriterDal>();
-            //services.AddTransient<ICategoryDal, CategoryDal>();
-            //services.AddTransient<IBlogDal, BlogDal>();
-            //services.AddTransient<ICommentDal, CommentDal>();
+
+            services.AddScoped<IHotelDal, HotelDal>();
+            services.AddScoped<IPaymentDal, PaymentDal>();
+            services.AddScoped<IReservationDal, ReservationDal>();
+            services.AddScoped<IRoomDal, RoomDal>();
+            services.AddScoped<IUserDal, UserDal>();
             return services;
         }
     }

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(HotelReservationDbContext))]
-    [Migration("20231130131046_mig_init")]
-    partial class mig_init
+    [Migration("20231130184121_mig_1")]
+    partial class mig_1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -149,9 +149,6 @@ namespace DataAccess.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ReservationId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
@@ -159,9 +156,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ReservationId")
-                        .IsUnique();
 
                     b.ToTable("Payments");
                 });
@@ -192,6 +186,9 @@ namespace DataAccess.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("PaymentId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("RoomId")
                         .HasColumnType("integer");
 
@@ -206,6 +203,8 @@ namespace DataAccess.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("HotelId");
+
+                    b.HasIndex("PaymentId");
 
                     b.HasIndex("RoomId");
 
@@ -235,17 +234,14 @@ namespace DataAccess.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsAvailable")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int?>("Price")
-                        .HasColumnType("integer");
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("numeric");
 
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
@@ -263,17 +259,6 @@ namespace DataAccess.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("Entities.Payments.Payment", b =>
-                {
-                    b.HasOne("Entities.Reservations.Reservation", "Reservation")
-                        .WithOne("Payment")
-                        .HasForeignKey("Entities.Payments.Payment", "ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Reservation");
-                });
-
             modelBuilder.Entity("Entities.Reservations.Reservation", b =>
                 {
                     b.HasOne("Core.Entities.AppUser", "Customer")
@@ -288,6 +273,10 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Entities.Payments.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId");
+
                     b.HasOne("Entities.Rooms.Room", "Room")
                         .WithMany()
                         .HasForeignKey("RoomId")
@@ -297,6 +286,8 @@ namespace DataAccess.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Hotel");
+
+                    b.Navigation("Payment");
 
                     b.Navigation("Room");
                 });
@@ -317,11 +308,6 @@ namespace DataAccess.Migrations
                     b.Navigation("Reservations");
 
                     b.Navigation("Rooms");
-                });
-
-            modelBuilder.Entity("Entities.Reservations.Reservation", b =>
-                {
-                    b.Navigation("Payment");
                 });
 #pragma warning restore 612, 618
         }

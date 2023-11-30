@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Entities.Hotels
 {
-    public class Hotel:BaseEntity
+    public class Hotel : BaseEntity
     {
         public string? Name { get; set; }
         public string? Address { get; set; }
@@ -25,6 +25,6 @@ namespace Entities.Hotels
 
         public ICollection<Room>? Rooms { get; set; }
         public ICollection<Reservation>? Reservations { get; set; }
+       
     }
-
 }

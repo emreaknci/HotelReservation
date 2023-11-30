@@ -19,8 +19,7 @@ namespace Entities.Reservations
         public int CustomerId { get; set; }
         public AppUser? Customer { get; set; }
 
+        public int? PaymentId { get; set; }
         public Payment? Payment { get; set; }
-
     }
-
 }

@@ -7,20 +7,11 @@ namespace Entities.Rooms
     {
         public RoomType Type { get; set; }
         public int? Capacity { get; set; }
-        public int? Price { get; set; }
+        public decimal? Price { get; set; }
         public string? Description { get; set; }
         public string? ImageUrl { get; set; }
-        public bool? IsAvailable { get; set; }
         public string? Name { get; set; }
-
         public int HotelId { get; set; }
         public Hotel? Hotel { get; set; }
     }
-    public enum RoomType
-    {
-        Standard,
-        Deluxe,
-        Suite,
-    }
-
 }
