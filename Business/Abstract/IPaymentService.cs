@@ -16,6 +16,7 @@ namespace Business.Abstract
         Result<PaginationResult<Payment>> GetAllPagination(BasePaginationRequest req);
         Task<Result<Payment>> PayAsync(CreatePaymentDto payment, DateTime checkOutDate, DateTime checkInDate);
         Task<Result<decimal>> GetAllTimeEarnings();
+        Task<Result<string>> CancelPayment(int id);
 
     }
 }

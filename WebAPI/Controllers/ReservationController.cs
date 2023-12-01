@@ -85,4 +85,12 @@ public class ReservationController : ControllerBase
             ? Ok(result)
             : BadRequest(result.Message);
     }
+    [HttpGet("cancel-reservation")]
+    public async Task<IActionResult> CancelReservation(int reservationId)
+    {
+        var result =await _reservationService.CancelReservationById(reservationId);
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
 }

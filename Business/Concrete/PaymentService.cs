@@ -28,6 +28,7 @@ namespace Business.Concrete
 
             var newPayment = _mapper.Map<Payment>(payment);
             newPayment.Amount = (decimal)amount;
+            newPayment.PaymentStatus = PaymentStatus.Paid;
             newPayment = await _paymentDal.AddAsync(newPayment);
             await _paymentDal.SaveAsync();
             return newPayment == null
@@ -63,6 +64,16 @@ namespace Business.Concrete
             return payment == null
                 ? Result<Payment>.FailureResult("Ödeme bulunamadı")
                 : Result<Payment>.SuccessResult(payment, "Ödeme bulundu");
+        }
+
+        public async Task<Result<string>> CancelPayment(int id)
+        {
+            var payment =await _paymentDal.GetByIdAsync(id);
+            if (payment == null)
+                return Result<string>.FailureResult("Ödeme bulunamadı");
+            payment.PaymentStatus = PaymentStatus.Canceled;
+            await _paymentDal.SaveAsync();
+            return Result<string>.SuccessResult("Ödeme iptal edildi");       
         }
     }
 }

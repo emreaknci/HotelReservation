@@ -15,6 +15,7 @@ namespace Business.Abstract
         Result<List<Reservation>> GetAll();
         Task<Result<Reservation>> GetByIdAsync(int id);
         Task<Result<Reservation>> Reserve(CreateReservationDto reservation);
+        Task<Result<Reservation>> CancelReservationById(int id);
         Task<Result<Reservation>> Update(UpdateReservationDto reservation);
         Task<Result<Reservation>> Remove(RemoveReservationDto reservation);
         Task<Result<Reservation>> RemoveById(int id);

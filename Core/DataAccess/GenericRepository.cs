@@ -121,7 +121,7 @@ namespace Core.DataAccess
 
             if (entityToDelete != null)
             {
-                entityToDelete.IsDeleted = true; 
+                entityToDelete.IsDeleted = true;
             }
 
             return entityToDelete;

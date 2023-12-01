@@ -21,13 +21,14 @@ namespace Business.Concrete
         private readonly IMapper _mapper;
         private readonly IRoomService _roomService;
         private readonly IPaymentService _paymentService;
-
-        public ReservationService(IReservationDal reservationDal, IMapper mapper, IRoomService roomService, IPaymentService paymentService)
+        private readonly IUserService _userService;
+        public ReservationService(IReservationDal reservationDal, IMapper mapper, IRoomService roomService, IPaymentService paymentService, IUserService userService)
         {
             _reservationDal = reservationDal;
             _mapper = mapper;
             _roomService = roomService;
             _paymentService = paymentService;
+            _userService = userService;
         }
 
         public async Task<Result<Reservation>> Reserve(CreateReservationDto reservation)
@@ -36,23 +37,34 @@ namespace Business.Concrete
             if (!roomResult.Success)
                 return Result<Reservation>.FailureResult(roomResult.Message);
 
-            var paymentResult = await CreatePaymentDto(reservation, (decimal)roomResult.Data!.Price);
-            if (!paymentResult.Success)
-                return Result<Reservation>.FailureResult(paymentResult.Message);
+            var userToCheck = await _userService.GetByIdAsync(reservation.CustomerId);
+            if (!userToCheck.Success)
+                return Result<Reservation>.FailureResult(userToCheck.Message);
 
-            var result = CheckIfTheRoomIsOccupiedOnTheReservationDate(reservation);
+            var result = CheckIfTheCustomerHasAnyReservationsBetweenTheDates
+               (reservation.CustomerId, (DateTime)reservation.CheckInDate, (DateTime)reservation.CheckOutDate);
             if (!result.Success)
                 return Result<Reservation>.FailureResult(result.Message);
 
+            result = CheckIfTheRoomIsOccupiedOnTheReservationDate(reservation);
+            if (!result.Success)
+                return Result<Reservation>.FailureResult(result.Message);
+
+            var paymentResult = await Pay(reservation, (decimal)roomResult.Data!.Price);
+            if (!paymentResult.Success)
+                return Result<Reservation>.FailureResult(paymentResult.Message);
 
             var newReservation = _mapper.Map<Reservation>(reservation);
             newReservation.PaymentId = paymentResult.Data!.Id;
             newReservation = await _reservationDal.AddAsync(newReservation);
 
             var saved = await _reservationDal.SaveAsync();
-            return saved == 0
-                ? Result<Reservation>.FailureResult("Rezervasyon oluşturulamadı")
-                : Result<Reservation>.SuccessResult(newReservation, "Rezervasyon oluşturuldu");
+            if (saved == 0)
+            {
+                await _paymentService.CancelPayment(paymentResult.Data!.Id);
+                return Result<Reservation>.FailureResult("Rezervasyon oluşturulamadı");
+            }
+            return Result<Reservation>.SuccessResult(newReservation, "Rezervasyon oluşturuldu");
 
         }
 
@@ -122,7 +134,27 @@ namespace Business.Concrete
                 ? Result<Reservation>.FailureResult("Rezervasyon güncellenemedi")
                 : Result<Reservation>.SuccessResult(reservationToBeUpdated, "Rezervasyon güncellendi");
         }
+        public async Task<Result<Reservation>> CancelReservationById(int id)
+        {
+            var reservation = await _reservationDal.GetByIdAsync(id);
+            if (reservation == null)
+                return Result<Reservation>.FailureResult("Rezervasyon bulunamadı");
+            reservation = await _reservationDal.SoftRemoveAsync(id);
+            reservation.Status = false;
+            var result = await _reservationDal.SaveAsync();
+            if (result == 0)
+                return Result<Reservation>.FailureResult("Rezervasyon iptal edilemedi");
 
+            var cancelPaymentResult = await _paymentService.CancelPayment((int)reservation.PaymentId);
+            if (!cancelPaymentResult.Success)
+            {
+                reservation.IsDeleted = false;
+                await _reservationDal.SaveAsync();
+                return Result<Reservation>.FailureResult(cancelPaymentResult.Message);
+            }
+
+            return Result<Reservation>.SuccessResult(reservation, "Rezervasyon iptal edildi");
+        }
         private Result<string> CheckIfTheRoomIsOccupiedOnTheReservationDate(CreateReservationDto dto)
         {
             if (dto.CheckInDate == null || dto.CheckOutDate == null || dto.CheckInDate >= dto.CheckOutDate || dto.CheckInDate < DateTime.UtcNow || dto.CheckOutDate < DateTime.UtcNow)
@@ -142,7 +174,26 @@ namespace Business.Concrete
 
             return Result<string>.SuccessResult(string.Empty);
         }
-        private async Task<Result<Payment>> CreatePaymentDto(CreateReservationDto reservation, decimal roomPrice)
+
+        private Result<string> CheckIfTheCustomerHasAnyReservationsBetweenTheDates(int customerId, DateTime checkInDate, DateTime checkOutDate)
+        {
+            if (checkInDate == null || checkOutDate == null || checkInDate >= checkOutDate || checkInDate < DateTime.UtcNow || checkOutDate < DateTime.UtcNow)
+            {
+                return Result<string>.FailureResult("Geçerli bir giriş ve çıkış tarihi seçilmelidir.");
+            }
+            var reservations = _reservationDal
+                .GetAll().Where(x => x.CustomerId == customerId
+                && (x.CheckInDate <= checkOutDate
+                    && x.CheckOutDate >= checkInDate)).ToList();
+
+            return reservations.Count > 0
+                ? Result<string>.FailureResult("Seçilen tarihlerde kullanıcının başka bir rezervasyonu bulunmaktadır")
+                : Result<string>.SuccessResult(string.Empty);
+
+        }
+
+
+        private async Task<Result<Payment>> Pay(CreateReservationDto reservation, decimal roomPrice)
         {
             var paymentDto = new CreatePaymentDto
             {
@@ -151,11 +202,14 @@ namespace Business.Concrete
                 CardHolderName = reservation.paymentDto.CardHolderName,
                 ExpirationDate = reservation.paymentDto.ExpirationDate,
                 CVV = reservation.paymentDto.CVV,
-                PaymentDate=DateTime.UtcNow
+                PaymentDate = DateTime.UtcNow
 
             };
+            var payment = _mapper.Map<Payment>(paymentDto);
 
             return await _paymentService.PayAsync(paymentDto, (DateTime)reservation.CheckOutDate, (DateTime)reservation.CheckInDate);
         }
+
+      
     }
 }

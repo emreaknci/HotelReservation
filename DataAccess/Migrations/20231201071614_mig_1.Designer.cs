@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(HotelReservationDbContext))]
-    [Migration("20231130184121_mig_1")]
+    [Migration("20231201071614_mig_1")]
     partial class mig_1
     {
         /// <inheritdoc />
@@ -148,6 +148,9 @@ namespace DataAccess.Migrations
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");

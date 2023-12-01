@@ -146,6 +146,9 @@ namespace DataAccess.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
