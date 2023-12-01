@@ -1,5 +1,6 @@
 using Business;
 using Core;
+using Core.Utils.Interceptors;
 using Core.Utils.Security.JWT;
 using DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -88,11 +89,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
 app.UseHttpsRedirection();
 app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<DelayInterceptor>();
 app.MapControllers();
 
 app.Run();

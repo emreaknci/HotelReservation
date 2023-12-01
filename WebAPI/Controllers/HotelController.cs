@@ -25,7 +25,7 @@ namespace WebAPI.Controllers
         {
             var result = _hotelService.GetAll();
             return result.Success
-                ? Ok(result.Data)
+                ? Ok(result)
                 : BadRequest(result.Message);
         }
 
@@ -34,7 +34,7 @@ namespace WebAPI.Controllers
         {
             var result = await _hotelService.GetByIdAsync(id);
             return result.Success
-                ? Ok(result.Data)
+                ? Ok(resultata)
                 : NotFound(result.Message);
         }
 
@@ -62,7 +62,7 @@ namespace WebAPI.Controllers
         {
             var result = await _hotelService.AddRangeAsync(hotels);
             return result.Success
-                ? CreatedAtAction(nameof(GetAll), result.Data)
+                ? Ok(result)
                 : BadRequest(result.Message);
         }
 
