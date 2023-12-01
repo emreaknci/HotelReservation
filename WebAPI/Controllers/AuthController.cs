@@ -8,7 +8,7 @@ namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
 
@@ -17,7 +17,7 @@ namespace WebAPI.Controllers
             _authService = authService;
         }
 
-        [HttpPost("adminRegister")]
+        [HttpPost("admin-register")]
         public async Task<IActionResult> AdminRegister([FromBody] RegisterDto dto)
         {
             var result = await _authService.AdminRegister(dto);
@@ -27,7 +27,7 @@ namespace WebAPI.Controllers
                 : BadRequest(result.Message);
 
         }
-        [HttpPost("customerRegister")]
+        [HttpPost("customer-register")]
         public async Task<IActionResult> CustomerRegister([FromBody] RegisterDto dto)
         {
             var result = await _authService.CustomerRegister(dto);

@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HotelController : ControllerBase
+    public class HotelController : BaseController
     {
         private readonly IHotelService _hotelService;
 
@@ -34,7 +35,7 @@ namespace WebAPI.Controllers
         {
             var result = await _hotelService.GetByIdAsync(id);
             return result.Success
-                ? Ok(resultata)
+                ? Ok(result)
                 : NotFound(result.Message);
         }
 
@@ -56,7 +57,7 @@ namespace WebAPI.Controllers
                 : BadRequest(result.Message);
         }
 
-        [HttpPost("addrange")]
+        [HttpPost("add-range")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddRangeAsync([FromBody] List<CreateHotelDto> hotels)
         {
@@ -76,7 +77,7 @@ namespace WebAPI.Controllers
                 : BadRequest(result);
         }
 
-        [HttpPut("updaterange")]
+        [HttpPut("update-range")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> UpdateRange([FromBody] List<UpdateHotelDto> hotels)
         {
@@ -106,7 +107,7 @@ namespace WebAPI.Controllers
                  : NotFound(result.Message);
         }
 
-        [HttpDelete("removerange")]
+        [HttpDelete("remove-range")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveRange([FromBody] List<RemoveHotelDto> hotels)
         {

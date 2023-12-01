@@ -16,5 +16,6 @@ namespace Business.Abstract
         Task<Result<AppUser>> GetByEmailAsync(string email);
         Task<Result<AppUser>> AddAsync(CreateUserDto user,UserType userType);
         Task<Result<UpdateUserDto>> UpdateAsync(UpdateUserDto user);
+        Task<Result<AppUser>> IsUserAdminAsync(int userId);
     }
 }

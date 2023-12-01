@@ -60,6 +60,19 @@ namespace Business.Concrete
                 :Result<AppUser>.SuccessResult(user);
         }
 
+        public async Task<Result<AppUser>> IsUserAdminAsync(int userId)
+        {
+            var user = await _userDal.GetByIdAsync(userId);
+            return user == null
+                ? Result<AppUser>.FailureResult("Kullanıcı bulunamadı")
+                : user.UserType == UserType.Admin
+                    ? Result<AppUser>.SuccessResult(user)
+                    : Result<AppUser>.FailureResult("Kullanıcı Yönetici Değil");
+
+
+            throw new NotImplementedException();
+        }
+
         public async Task<Result<UpdateUserDto>> UpdateAsync(UpdateUserDto user)
         {
             var userToBeUpdated = _mapper.Map<AppUser>(user);
