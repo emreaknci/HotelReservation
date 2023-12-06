@@ -5,6 +5,8 @@ using Entities.Hotels;
 using Entities.Reservations;
 using Entities.Rooms;
 using Entities.Payments;
+using Entities.HotelImages;
+using Entities.RoomImages;
 
 namespace DataAccess
 {
@@ -44,10 +46,13 @@ namespace DataAccess
            .WithMany()
            .HasForeignKey(e => e.CustomerId);
         }
-        DbSet<Hotel> Hotels { get; set; }
-        DbSet<Payment> Payments { get; set; }
-        DbSet<Reservation> Reservations { get; set; }
-        DbSet<Room> Rooms { get; set; }
-        DbSet<AppUser> Users { get; set; }
+        public DbSet<Hotel> Hotels { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Room> Rooms { get; set; }
+        public DbSet<AppUser> Users { get; set; }
+        public DbSet<HotelImage> HotelImages { get; set; }
+        public DbSet<RoomImage> RoomImages { get; set; }
+
     }
 }

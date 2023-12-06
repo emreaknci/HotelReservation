@@ -21,14 +21,37 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllRooms()
+        public IActionResult GetAll()
         {
             var result = _roomService.GetAll();
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);
         }
-
+        [HttpGet("get-rooms-with-images-by-hotel-id/{hotelId}")]
+        public IActionResult GetAllRooms(int hotelId)
+        {
+            var result = _roomService.GetRoomsWithImagesByHotelId(hotelId);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+        [HttpGet("get-room-by-id-with-images/{roomId}")]
+        public IActionResult GetByIdWithImages(int roomId)
+        {
+            var result = _roomService.GetByIdWithImages(roomId);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+        [HttpGet("get-rooms-with-images")]
+        public IActionResult GetRoomsWithImages()
+        {
+            var result = _roomService.GetRoomsWithImages();
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoomById(int id)
         {
@@ -58,8 +81,8 @@ namespace WebAPI.Controllers
 
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> AddRoom([FromBody] CreateRoomDto room)
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> AddRoom([FromForm] CreateRoomDto room)
         {
             var result = await _roomService.AddAsync(room);
             return result.Success

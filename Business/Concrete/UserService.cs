@@ -2,6 +2,7 @@
 using Business.Abstract;
 using Core.Entities;
 using Core.Utils.Results;
+using Core.Utils.Security.Hashing;
 using DataAccess.Abstract;
 using Entities.Users;
 using System;
@@ -34,6 +35,32 @@ namespace Business.Concrete
             return saved == 0
                 ? Result<AppUser>.FailureResult("Kullanıcı eklenemedi")
                 : Result<AppUser>.SuccessResult(newUser,"Kullanıcı eklendi");
+        }
+
+        public async Task<Result<bool>> ChangePassword(ChangeUserPasswordDto dto)
+        {
+            var userToCheck =await GetByIdAsync(dto.Id);
+            if (userToCheck == null)
+                return Result<bool>.FailureResult(userToCheck.Message);
+
+            var user = userToCheck.Data;
+            if (!HashingHelper.VerifyPasswordHash(dto.OldPassword!, user.PasswordHash!, user.PasswordSalt!))
+                return Result<bool>.FailureResult("Mevcut şifrenizi doğru girdiğinizden emin olun.");
+
+            if(dto.NewPassword == dto.OldPassword)
+                return Result<bool>.FailureResult("Yeni şifre mevcut şifreniz ile aynı olamaz!");
+
+
+
+            HashingHelper.CreatePasswordHash(dto.NewPassword!, out var hash, out var salt);
+            user.PasswordHash = hash;
+            user.PasswordSalt = salt;
+            _userDal.Update(user);
+
+            var saved = await _userDal.SaveAsync();
+            return saved == 0
+                ? Result<bool>.FailureResult("Şifre değiştirilemedi")
+                : Result<bool>.SuccessResult(true, "Şifre değiştirildi");
         }
 
         public Result<List<AppUser>> GetAll()

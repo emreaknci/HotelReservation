@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Business.Abstract;
 using Core.Entities;
+using Core.Helpers;
 using Core.Utils.Results;
 using DataAccess.Abstract;
+using Entities.RoomImages;
 using Entities.Rooms;
 using System;
 using System.Collections.Generic;
@@ -16,22 +18,43 @@ namespace Business.Concrete
     {
         private readonly IRoomDal _roomDal;
         private readonly IMapper _mapper;
+        private readonly IRoomImageDal _roomImageDal;
 
-        public RoomService(IRoomDal roomDal, IMapper mapper)
+        public RoomService(IRoomDal roomDal, IMapper mapper, IRoomImageDal roomImageDal)
         {
             _roomDal = roomDal;
             _mapper = mapper;
+            _roomImageDal = roomImageDal;
         }
 
         public async Task<Result<Room>> AddAsync(CreateRoomDto room)
         {
             var newRoom = _mapper.Map<Room>(room);
             newRoom = await _roomDal.AddAsync(newRoom);
-
             var saved = await _roomDal.SaveAsync();
-            return saved == 0
-                ? Result<Room>.FailureResult("Oda eklenemedi")
-                : Result<Room>.SuccessResult(newRoom, "Oda eklendi");
+
+            if (saved < 0)
+                return Result<Room>.FailureResult("Oda eklenemedi.");
+
+            if (room.Images != null)
+            {
+                foreach (var image in room.Images)
+                {
+                    var result = FileHelper.Upload(image);
+                    if (!result.Success)
+                        return Result<Room>.FailureResult(result.Message);
+                    var newImage = new RoomImage
+                    {
+                        RoomId = newRoom.Id,
+                        ImageUrl = result.Data
+                    };
+                    await _roomImageDal.AddAsync(newImage);
+                    saved = await _roomImageDal.SaveAsync();
+                    if (saved < 0)
+                        return Result<Room>.FailureResult("Oda resimleri eklenemedi.");
+                }
+            }
+            return Result<Room>.SuccessResult(newRoom, "Oda eklendi.");
         }
 
         public async Task<Result<List<Room>>> AddRangeAsync(List<CreateRoomDto> rooms)
@@ -70,13 +93,36 @@ namespace Business.Concrete
                 : Result<Room>.SuccessResult(room, "Oda bulundu");
         }
 
+        public Result<RoomDetailDto> GetByIdWithImages(int roomId)
+        {
+            var room = _roomDal.GetRoomWithImagesById(roomId);
+            return room == null
+                ? Result<RoomDetailDto>.FailureResult("Oda bulunamadı")
+                : Result<RoomDetailDto>.SuccessResult(room, "Oda bulundu");
+        }
+
         public Result<List<Room>> GetRoomsByHotelId(int hotelId)
         {
             var rooms = _roomDal.GetAll().Where(x => x.HotelId == hotelId).ToList();
             return rooms == null || rooms.Count == 0
                 ? Result<List<Room>>.FailureResult("Otele ait oda bulunamadı")
                 : Result<List<Room>>.SuccessResult(rooms, "Odalar bulundu");
+        }
 
+        public Result<List<RoomDetailDto>> GetRoomsWithImages()
+        {
+            var rooms = _roomDal.GetRoomsWithImages();
+            return rooms == null || rooms.Count == 0
+                ? Result<List<RoomDetailDto>>.FailureResult("Odalar bulunamadı")
+                : Result<List<RoomDetailDto>>.SuccessResult(rooms, "Odalar bulundu");
+        }
+
+        public Result<List<RoomDetailDto>> GetRoomsWithImagesByHotelId(int hotelId)
+        {
+            var rooms = _roomDal.GetRoomsWithImagesByHotelId(hotelId);
+            return rooms == null || rooms.Count == 0
+                ? Result<List<RoomDetailDto>>.FailureResult("Otele ait oda bulunamadı")
+                : Result<List<RoomDetailDto>>.SuccessResult(rooms, "Odalar bulundu");
         }
 
         public async Task<Result<Room>> Remove(RemoveRoomDto room)

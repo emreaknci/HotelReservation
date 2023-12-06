@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(HotelReservationDbContext))]
-    [Migration("20231201071614_mig_1")]
+    [Migration("20231206120351_mig_1")]
     partial class mig_1
     {
         /// <inheritdoc />
@@ -71,6 +71,39 @@ namespace DataAccess.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Entities.HotelImages.HotelImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("HotelId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("HotelImages");
+                });
+
             modelBuilder.Entity("Entities.Hotels.Hotel", b =>
                 {
                     b.Property<int>("Id")
@@ -95,9 +128,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
@@ -214,6 +244,39 @@ namespace DataAccess.Migrations
                     b.ToTable("Reservations");
                 });
 
+            modelBuilder.Entity("Entities.RoomImages.RoomImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("RoomImages");
+                });
+
             modelBuilder.Entity("Entities.Rooms.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -233,9 +296,6 @@ namespace DataAccess.Migrations
 
                     b.Property<int>("HotelId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -260,6 +320,15 @@ namespace DataAccess.Migrations
                     b.HasIndex("HotelId");
 
                     b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("Entities.HotelImages.HotelImage", b =>
+                {
+                    b.HasOne("Entities.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId");
+
+                    b.Navigation("Hotel");
                 });
 
             modelBuilder.Entity("Entities.Reservations.Reservation", b =>
@@ -291,6 +360,15 @@ namespace DataAccess.Migrations
                     b.Navigation("Hotel");
 
                     b.Navigation("Payment");
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Entities.RoomImages.RoomImage", b =>
+                {
+                    b.HasOne("Entities.Rooms.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
 
                     b.Navigation("Room");
                 });

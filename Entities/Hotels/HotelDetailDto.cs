@@ -1,6 +1,4 @@
-﻿using Core.Entities;
-using Entities.HotelImages;
-using Entities.Reservations;
+﻿using Entities.Reservations;
 using Entities.Rooms;
 using System;
 using System.Collections.Generic;
@@ -10,8 +8,13 @@ using System.Threading.Tasks;
 
 namespace Entities.Hotels
 {
-    public class Hotel : BaseEntity
+    public record HotelDetailDto
     {
+        public int Id { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public bool Status { get; set; } = true;
+        public bool IsDeleted { get; set; } = false;
         public string? Name { get; set; }
         public string? Address { get; set; }
         public string? City { get; set; }
@@ -22,6 +25,7 @@ namespace Entities.Hotels
         public string? Description { get; set; }
         public int? Star { get; set; }
         public int? TotalRoomCount { get; set; }
+        public List<string> Images { get; set; }
         public ICollection<Room>? Rooms { get; set; }
         public ICollection<Reservation>? Reservations { get; set; }
     }

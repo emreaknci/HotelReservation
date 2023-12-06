@@ -1,4 +1,7 @@
-﻿namespace Entities.Hotels
+﻿using Entities.HotelImages;
+using Microsoft.AspNetCore.Http;
+
+namespace Entities.Hotels
 {
     public record CreateHotelDto
     {
@@ -10,7 +13,7 @@
         public string? Email { get; init; }
         public string? Website { get; init; }
         public string? Description { get; init; }
-        public string? ImageUrl { get; init; }
+        public List<IFormFile>? Images{ get; init; }
         public int? Star { get; init; }
         public int? TotalRoomCount { get; init; }
     }

@@ -29,6 +29,22 @@ namespace WebAPI.Controllers
                 ? Ok(result)
                 : BadRequest(result.Message);
         }
+        [HttpGet("get-all-with-images")]
+        public IActionResult GetAllWithImages()
+        {
+            var result = _hotelService.GetAllWithImages();
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+        [HttpGet("get-by-id-with-images/{id}")]
+        public IActionResult GetByIdWithImages(int id)
+        {
+            var result = _hotelService.GetByIdWithImages(id);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(int id)
@@ -48,8 +64,8 @@ namespace WebAPI.Controllers
                  : BadRequest(result.Message);
         }
         [HttpPost]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> AddAsync([FromBody] CreateHotelDto hotel)
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> AddAsync([FromForm] CreateHotelDto hotel)
         {
             var result = await _hotelService.AddAsync(hotel);
             return result.Success

@@ -25,6 +25,9 @@ namespace DataAccess
             services.AddScoped<IReservationDal, ReservationDal>();
             services.AddScoped<IRoomDal, RoomDal>();
             services.AddScoped<IUserDal, UserDal>();
+            services.AddScoped<IRoomImageDal, RoomImageDal>();
+            services.AddScoped<IHotelImageDal, HotelImageDal>();
+
             return services;
         }
     }

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Business.Abstract;
 using Core.Entities;
+using Core.Helpers;
 using Core.Utils.Results;
 using DataAccess.Abstract;
+using Entities.HotelImages;
 using Entities.Hotels;
 using System.Collections.Generic;
 
@@ -12,18 +14,43 @@ namespace Business.Concrete
     {
         private readonly IHotelDal _hotelDal;
         private readonly IMapper _mapper;
+        private readonly IHotelImageDal _hotelImageDal;
 
-        public HotelService(IHotelDal hotelDal, IMapper mapper)
+        public HotelService(IHotelDal hotelDal, IMapper mapper, IHotelImageDal hotelImageDal)
         {
             _hotelDal = hotelDal;
             _mapper = mapper;
+            _hotelImageDal = hotelImageDal;
         }
 
         public async Task<Result<Hotel>> AddAsync(CreateHotelDto hotel)
         {
+
             var newHotel = _mapper.Map<Hotel>(hotel);
-            await _hotelDal.AddAsync(newHotel);
-            await _hotelDal.SaveAsync();
+            newHotel = await _hotelDal.AddAsync(newHotel);
+            var saved = await _hotelDal.SaveAsync();
+
+            if (saved < 0)
+                return Result<Hotel>.FailureResult("Otel eklenemedi.");
+
+            if (hotel.Images != null)
+            {
+                foreach (var image in hotel.Images)
+                {
+                    var result = FileHelper.Upload(image);
+                    if (!result.Success)
+                        return Result<Hotel>.FailureResult(result.Message);
+                    var newImage = new HotelImage
+                    {
+                        HotelId = newHotel.Id,
+                        ImageUrl = result.Data
+                    };
+                    await _hotelImageDal.AddAsync(newImage);
+                    saved = await _hotelImageDal.SaveAsync();
+                    if (saved < 0)
+                        return Result<Hotel>.FailureResult("Otel resimleri eklenemedi.");
+                }
+            }
             return Result<Hotel>.SuccessResult(newHotel, "Otel eklendi.");
         }
 
@@ -49,10 +76,28 @@ namespace Business.Concrete
             return Result<PaginationResult<Hotel>>.SuccessResult(hotels, "Oteller listelendi.");
         }
 
+        public Result<List<HotelDetailDto>> GetAllWithImages()
+        {
+            var hotels = _hotelDal.GetHotelsWithImages();
+
+            return hotels == null || hotels.Count == 0
+                ? Result<List<HotelDetailDto>>.FailureResult("Oteller bulunamadı.")
+                : Result<List<HotelDetailDto>>.SuccessResult(hotels, "Oteller listelendi.");    
+
+        }
+
         public async Task<Result<Hotel>> GetByIdAsync(int id)
         {
             var hotel = await _hotelDal.GetByIdAsync(id);
             return Result<Hotel>.SuccessResult(hotel, "Otel getirildi.");
+        }
+
+        public Result<HotelDetailDto> GetByIdWithImages(int id)
+        {
+            var hotel = _hotelDal.GetHotelWithImagesById(id);
+            return hotel == null
+                ? Result<HotelDetailDto>.FailureResult("Otel bulunamadı.")
+                : Result<HotelDetailDto>.SuccessResult(hotel, "Otel getirildi.");
         }
 
         public async Task<Result<Hotel>> Remove(RemoveHotelDto hotel)
