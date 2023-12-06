@@ -6,6 +6,7 @@ using Core.Utils.Results;
 using DataAccess.Abstract;
 using Entities.HotelImages;
 using Entities.Hotels;
+using Entities.Rooms;
 using System.Collections.Generic;
 
 namespace Business.Concrete
@@ -15,12 +16,14 @@ namespace Business.Concrete
         private readonly IHotelDal _hotelDal;
         private readonly IMapper _mapper;
         private readonly IHotelImageDal _hotelImageDal;
+        private readonly IRoomService _roomService;
 
-        public HotelService(IHotelDal hotelDal, IMapper mapper, IHotelImageDal hotelImageDal)
+        public HotelService(IHotelDal hotelDal, IMapper mapper, IHotelImageDal hotelImageDal, IRoomService roomService)
         {
             _hotelDal = hotelDal;
             _mapper = mapper;
             _hotelImageDal = hotelImageDal;
+            _roomService = roomService;
         }
 
         public async Task<Result<Hotel>> AddAsync(CreateHotelDto hotel)
@@ -82,7 +85,7 @@ namespace Business.Concrete
 
             return hotels == null || hotels.Count == 0
                 ? Result<List<HotelDetailDto>>.FailureResult("Oteller bulunamadı.")
-                : Result<List<HotelDetailDto>>.SuccessResult(hotels, "Oteller listelendi.");    
+                : Result<List<HotelDetailDto>>.SuccessResult(hotels, "Oteller listelendi.");
 
         }
 
@@ -95,9 +98,15 @@ namespace Business.Concrete
         public Result<HotelDetailDto> GetByIdWithImages(int id)
         {
             var hotel = _hotelDal.GetHotelWithImagesById(id);
-            return hotel == null
-                ? Result<HotelDetailDto>.FailureResult("Otel bulunamadı.")
-                : Result<HotelDetailDto>.SuccessResult(hotel, "Otel getirildi.");
+
+            if (hotel == null)
+            {
+                return Result<HotelDetailDto>.FailureResult("Otel bulunamadı.");
+            }
+
+            var rooms = _roomService.GetRoomsWithImagesByHotelId(id);
+            hotel.Rooms = rooms?.Data != null ? rooms.Data : null;
+            return Result<HotelDetailDto>.SuccessResult(hotel, "Otel getirildi.");
         }
 
         public async Task<Result<Hotel>> Remove(RemoveHotelDto hotel)

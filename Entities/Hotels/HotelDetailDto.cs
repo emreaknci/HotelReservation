@@ -26,7 +26,7 @@ namespace Entities.Hotels
         public int? Star { get; set; }
         public int? TotalRoomCount { get; set; }
         public List<string> Images { get; set; }
-        public ICollection<Room>? Rooms { get; set; }
+        public ICollection<RoomDetailDto>? Rooms { get; set; }
         public ICollection<Reservation>? Reservations { get; set; }
     }
 }
