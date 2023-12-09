@@ -6,7 +6,9 @@ using DataAccess.Abstract;
 using DataAccess.Concrete;
 using Entities.Hotels;
 using Entities.Payments;
+using Entities.Reservation;
 using Entities.Reservations;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,16 +43,17 @@ namespace Business.Concrete
             if (!userToCheck.Success)
                 return Result<Reservation>.FailureResult(userToCheck.Message);
 
-            var result = CheckIfTheCustomerHasAnyReservationsBetweenTheDates
-               (reservation.CustomerId, (DateTime)reservation.CheckInDate, (DateTime)reservation.CheckOutDate);
+            var result = CheckCustomerBookingAndRoomOccupancy(new ReservationCheckDto()
+            {
+                CheckInDate = (DateTime)reservation.CheckInDate!,
+                CheckOutDate = (DateTime)reservation.CheckOutDate!,
+                CustomerId = reservation.CustomerId,
+                RoomId = reservation.RoomId
+            });
             if (!result.Success)
                 return Result<Reservation>.FailureResult(result.Message);
 
-            result = CheckIfTheRoomIsOccupiedOnTheReservationDate(reservation);
-            if (!result.Success)
-                return Result<Reservation>.FailureResult(result.Message);
-
-            var paymentResult = await Pay(reservation, (decimal)roomResult.Data!.Price);
+            var paymentResult = await Pay(reservation, (decimal)roomResult.Data!.Price!);
             if (!paymentResult.Success)
                 return Result<Reservation>.FailureResult(paymentResult.Message);
 
@@ -155,19 +158,23 @@ namespace Business.Concrete
 
             return Result<Reservation>.SuccessResult(reservation, "Rezervasyon iptal edildi");
         }
-        private Result<string> CheckIfTheRoomIsOccupiedOnTheReservationDate(CreateReservationDto dto)
+
+
+
+        public Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto)
         {
-            if (dto.CheckInDate == null || dto.CheckOutDate == null || dto.CheckInDate >= dto.CheckOutDate || dto.CheckInDate < DateTime.UtcNow || dto.CheckOutDate < DateTime.UtcNow)
+            if (IsInvalidDateRange(dto.CheckInDate, dto.CheckOutDate))
             {
                 return Result<string>.FailureResult("Geçerli bir giriş ve çıkış tarihi seçilmelidir.");
             }
 
-            var reservations = _reservationDal
-                .GetAll().Where(x => x.RoomId == dto.RoomId
-                && (x.CheckInDate <= dto.CheckOutDate
-                    && x.CheckOutDate >= dto.CheckInDate)).ToList();
+            if (!GetCustomerBookingInDateRange(dto.CustomerId, dto.CheckInDate, dto.CheckOutDate).IsNullOrEmpty())
+            {
+                var message = GetCustomerBookingInDateRange(dto.CustomerId, dto.CheckInDate, dto.CheckOutDate);
+                return Result<string>.FailureResult($"Seçilen tarihler arasında başka bir rezervasyonunuz bulunmaktadır. ({message})");
+            }
 
-            if (reservations.Count > 0)
+            if (IsRoomOccupied(dto.RoomId, dto.CheckInDate, dto.CheckOutDate))
             {
                 return Result<string>.FailureResult("Seçilen tarihlerde oda doludur.");
             }
@@ -175,41 +182,46 @@ namespace Business.Concrete
             return Result<string>.SuccessResult(string.Empty);
         }
 
-        private Result<string> CheckIfTheCustomerHasAnyReservationsBetweenTheDates(int customerId, DateTime checkInDate, DateTime checkOutDate)
+        private bool IsInvalidDateRange(DateTime checkInDate, DateTime checkOutDate)
         {
-            if (checkInDate == null || checkOutDate == null || checkInDate >= checkOutDate || checkInDate < DateTime.UtcNow || checkOutDate < DateTime.UtcNow)
-            {
-                return Result<string>.FailureResult("Geçerli bir giriş ve çıkış tarihi seçilmelidir.");
-            }
-            var reservations = _reservationDal
-                .GetAll().Where(x => x.CustomerId == customerId
-                && (x.CheckInDate <= checkOutDate
-                    && x.CheckOutDate >= checkInDate)).ToList();
-
-            return reservations.Count > 0
-                ? Result<string>.FailureResult("Seçilen tarihlerde kullanıcının başka bir rezervasyonu bulunmaktadır")
-                : Result<string>.SuccessResult(string.Empty);
-
+            return checkInDate > checkOutDate
+                   || DateOnly.FromDateTime(checkInDate) < DateOnly.FromDateTime(DateTime.UtcNow)
+                   || DateOnly.FromDateTime(checkOutDate) < DateOnly.FromDateTime(DateTime.UtcNow);
         }
 
+        private string? GetCustomerBookingInDateRange(int customerId, DateTime checkInDate, DateTime checkOutDate)
+        {
+            var reservation = _reservationDal.GetAll()
+                .FirstOrDefault(x => x.CustomerId == customerId &&
+                                     x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
+                                     x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
 
+            return reservation != null
+                 ? $"{reservation.CheckInDate.Value.ToString("dd/MM/yyyy")} - {reservation.CheckOutDate.Value.ToString("dd/MM/yyyy")}"
+                : null;
+        }
+
+        private bool IsRoomOccupied(int roomId, DateTime checkInDate, DateTime checkOutDate)
+        {
+            return _reservationDal.GetAll().Any(x => x.RoomId == roomId &&
+                                                     x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
+                                                     x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
+        }
         private async Task<Result<Payment>> Pay(CreateReservationDto reservation, decimal roomPrice)
         {
             var paymentDto = new CreatePaymentDto
             {
                 Amount = roomPrice,
-                CardNumber = reservation.paymentDto.CardNumber,
-                CardHolderName = reservation.paymentDto.CardHolderName,
-                ExpirationDate = reservation.paymentDto.ExpirationDate,
-                CVV = reservation.paymentDto.CVV,
+                CardNumber = reservation.PaymentDto.CardNumber,
+                CardHolderName = reservation.PaymentDto.CardHolderName,
+                ExpirationDate = reservation.PaymentDto.ExpirationDate,
+                CVV = reservation.PaymentDto.CVV,
                 PaymentDate = DateTime.UtcNow
 
             };
             var payment = _mapper.Map<Payment>(paymentDto);
 
-            return await _paymentService.PayAsync(paymentDto, (DateTime)reservation.CheckOutDate, (DateTime)reservation.CheckInDate);
+            return await _paymentService.PayAsync(paymentDto, DateOnly.FromDateTime((DateTime)reservation.CheckOutDate!), DateOnly.FromDateTime((DateTime)reservation.CheckInDate!));
         }
-
-      
     }
 }

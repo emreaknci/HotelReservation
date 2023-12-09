@@ -1,6 +1,5 @@
 ﻿using Core.Entities;
 using Entities.HotelImages;
-using Entities.Reservations;
 using Entities.Rooms;
 using System;
 using System.Collections.Generic;
@@ -23,6 +22,6 @@ namespace Entities.Hotels
         public int? Star { get; set; }
         public int? TotalRoomCount { get; set; }
         public ICollection<Room>? Rooms { get; set; }
-        public ICollection<Reservation>? Reservations { get; set; }
+        public ICollection<Entities.Reservations.Reservation>? Reservations { get; set; }
     }
 }

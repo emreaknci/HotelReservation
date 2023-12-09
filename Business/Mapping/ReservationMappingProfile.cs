@@ -7,7 +7,12 @@ namespace Business.Mapping
     {
         public ReservationMappingProfile()
         {
-            CreateMap<CreateReservationDto, Reservation>().ReverseMap();
+            CreateMap<CreateReservationDto, Reservation>()
+                .ForMember(dest => dest.CheckInDate,
+                opt => opt.MapFrom(src => DateOnly.FromDateTime((DateTime)src.CheckInDate)))
+                .ForMember(dest => dest.CheckOutDate,
+                opt => opt.MapFrom(src => DateOnly.FromDateTime((DateTime)src.CheckOutDate)));
+
             CreateMap<RemoveReservationDto, Reservation>().ReverseMap();
             CreateMap<UpdateReservationDto, Reservation>().ReverseMap();
         }

@@ -27,6 +27,6 @@ namespace Entities.Hotels
         public int? TotalRoomCount { get; set; }
         public List<string> Images { get; set; }
         public ICollection<RoomDetailDto>? Rooms { get; set; }
-        public ICollection<Reservation>? Reservations { get; set; }
+        public ICollection<Entities.Reservations.Reservation>? Reservations { get; set; }
     }
 }

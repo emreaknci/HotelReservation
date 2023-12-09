@@ -1,5 +1,6 @@
 ﻿using Business.Abstract;
 using Core.Entities;
+using Entities.Reservation;
 using Entities.Reservations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -43,12 +44,20 @@ public class ReservationController : BaseController
 
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
-    public async Task<IActionResult> AddAsync(CreateReservationDto reservation)
+    public async Task<IActionResult> AddAsync([FromBody] CreateReservationDto reservation)
     {
         if(reservation.CustomerId != GetCurrentUserId() && !User.IsInRole("Admin"))
             return Unauthorized();
 
         var result = await _reservationService.Reserve(reservation);
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
+    [HttpPost("check-customer-booking-and-room-occupancy")]
+    public IActionResult CheckCustomerBookingAndRoomOccupancy([FromBody] ReservationCheckDto dto)
+    {
+        var result = _reservationService.CheckCustomerBookingAndRoomOccupancy(dto);
         return result.Success
             ? Ok(result)
             : BadRequest(result.Message);
@@ -70,7 +79,7 @@ public class ReservationController : BaseController
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
     public async Task<IActionResult> Remove(RemoveReservationDto reservation)
     {
-        var reservationCustomerId= _reservationService.GetByIdAsync((int)reservation.Id!).Result.Data!.CustomerId;
+        var reservationCustomerId = _reservationService.GetByIdAsync((int)reservation.Id!).Result.Data!.CustomerId;
         if (reservationCustomerId != GetCurrentUserId() && !User.IsInRole("Admin"))
             return Unauthorized();
 

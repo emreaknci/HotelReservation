@@ -20,9 +20,9 @@ namespace Business.Concrete
             _mapper = mapper;
         }
 
-        public async Task<Result<Payment>> PayAsync(CreatePaymentDto payment, DateTime checkOutDate, DateTime checkInDate)
+        public async Task<Result<Payment>> PayAsync(CreatePaymentDto payment, DateOnly checkOutDate, DateOnly checkInDate)
         {
-            var amount = payment.Amount * (checkOutDate - checkInDate).Days;
+            var amount = payment.Amount * (checkOutDate.DayNumber - checkInDate.DayNumber+1);
             if (!payment.IsCardValid())
                 return Result<Payment>.FailureResult("Kredi kartı bilgileri eksik veya hatalı!");
 
@@ -68,12 +68,12 @@ namespace Business.Concrete
 
         public async Task<Result<string>> CancelPayment(int id)
         {
-            var payment =await _paymentDal.GetByIdAsync(id);
+            var payment = await _paymentDal.GetByIdAsync(id);
             if (payment == null)
                 return Result<string>.FailureResult("Ödeme bulunamadı");
             payment.PaymentStatus = PaymentStatus.Canceled;
             await _paymentDal.SaveAsync();
-            return Result<string>.SuccessResult("Ödeme iptal edildi");       
+            return Result<string>.SuccessResult("Ödeme iptal edildi");
         }
     }
 }

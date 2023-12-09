@@ -20,7 +20,8 @@ namespace Entities.Rooms
         public string? Description { get; set; }
         public string? Name { get; set; }
         public int HotelId { get; set; }
-        public Hotel? Hotel { get; set; }
+        public string? HotelName{ get; set; }
         public List<string>? Images { get; set;}
+
     }
 }

@@ -9,6 +9,6 @@ namespace Entities.Reservations
         public int HotelId { get; init; }
         public int RoomId { get; init; }
         public int CustomerId { get; init; }
-        public CreatePaymentDto paymentDto { get; init; }
+        public CreatePaymentDto PaymentDto { get; init; }
     }
 }

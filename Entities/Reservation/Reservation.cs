@@ -7,8 +7,8 @@ namespace Entities.Reservations
 {
     public class Reservation : BaseEntity
     {
-        public DateTime? CheckInDate { get; set; }
-        public DateTime? CheckOutDate { get; set; }
+        public DateOnly? CheckInDate { get; set; }
+        public DateOnly? CheckOutDate { get; set; }
 
         public int HotelId { get; set; }
         public Hotel? Hotel { get; set; }

@@ -1,6 +1,7 @@
 ﻿using Core.Entities;
 using Core.Utils.Results;
 using Entities.Hotels;
+using Entities.Reservation;
 using Entities.Reservations;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Business.Abstract
         Task<Result<Reservation>> GetByIdAsync(int id);
         Task<Result<Reservation>> Reserve(CreateReservationDto reservation);
         Task<Result<Reservation>> CancelReservationById(int id);
+        Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto);
         Task<Result<Reservation>> Update(UpdateReservationDto reservation);
         Task<Result<Reservation>> Remove(RemoveReservationDto reservation);
         Task<Result<Reservation>> RemoveById(int id);

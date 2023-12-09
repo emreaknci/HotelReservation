@@ -30,7 +30,9 @@ namespace DataAccess.Concrete
                              UpdatedDate = room.UpdatedDate,
                              Images = roomImages.Any()
                                         ? roomImages.Select(image => "/Images/" + image.ImageUrl).ToList()
-                                        : defaultImages
+                                        : defaultImages,
+                             Capacity = room.Capacity
+
                          };
             return filter == null
                 ? result.ToList()
@@ -54,7 +56,9 @@ namespace DataAccess.Concrete
                              UpdatedDate = room.UpdatedDate,
                              Images = roomImages.Any()
                                         ? roomImages.Select(image => "/Images/" + image.ImageUrl).ToList()
-                                        : defaultImages
+                                        : defaultImages,
+                             Capacity = room.Capacity,  
+                             HotelName = room.Hotel.Name
                          };
             return filter == null
                 ? result.ToList()
@@ -78,7 +82,10 @@ namespace DataAccess.Concrete
                              UpdatedDate = room.UpdatedDate,
                              Images = roomImages.Any()
                                         ? roomImages.Select(image => "/Images/" + image.ImageUrl).ToList()
-                                        : defaultImages
+                                        : defaultImages,
+                             Capacity = room.Capacity,
+                             HotelName = room.Hotel.Name
+
                          };
 
             return filter == null
