@@ -45,6 +45,14 @@ namespace WebAPI.Controllers
                 ? Ok(result)
                 : BadRequest(result.Message);
         }
+        [HttpGet("change-hotel-status")]
+        public async Task<IActionResult> ChangeHotelStatus(int hotelId)
+        {
+            var result =await _hotelService.ChangeHotelStatus(hotelId);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(int id)

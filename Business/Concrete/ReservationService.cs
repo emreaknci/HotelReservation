@@ -233,7 +233,7 @@ namespace Business.Concrete
         private Result<string> GetCustomerBookingInDateRange(int customerId, DateTime checkInDate, DateTime checkOutDate)
         {
             var reservation = _reservationDal.GetAll()
-                .FirstOrDefault(x => x.CustomerId == customerId &&
+                .FirstOrDefault(x => x.CustomerId == customerId && x.Status==true &&
                                      x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
                                      x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
 
@@ -244,7 +244,7 @@ namespace Business.Concrete
 
         private Result<string> IsRoomOccupied(int roomId, DateTime checkInDate, DateTime checkOutDate)
         {
-            var reservation = _reservationDal.GetAll().FirstOrDefault(x => x.RoomId == roomId &&
+            var reservation = _reservationDal.GetAll().FirstOrDefault(x => x.RoomId == roomId && x.Status==true &&
                                                      x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
                                                      x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
             return reservation != null

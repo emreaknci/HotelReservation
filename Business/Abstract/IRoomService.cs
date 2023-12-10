@@ -26,5 +26,6 @@ namespace Business.Abstract
         Task<Result<Room>> RemoveById(int id);
         Task<Result<List<Room>>> RemoveRange(List<RemoveRoomDto> rooms);
         Result<PaginationResult<Room>> GetAllPagination(BasePaginationRequest req);
+        Task<Result<bool>> ChangeRoomStatus(int roomId);
     }
 }

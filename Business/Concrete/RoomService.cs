@@ -69,6 +69,21 @@ namespace Business.Concrete
 
         }
 
+        public async Task<Result<bool>> ChangeRoomStatus(int roomId)
+        {
+            var room = await _roomDal.GetByIdAsync(roomId);
+            if (room == null)
+                return Result<bool>.FailureResult("Oda bulunamadı");
+
+            room.Status = !room.Status;
+            room = _roomDal.Update(room);
+            var saved = await _roomDal.SaveAsync();
+
+            return saved == 0
+                ? Result<bool>.FailureResult("Oda durumu değiştirilemedi")
+                : Result<bool>.SuccessResult(room.Status, "Oda durumu değiştirildi");
+        }
+
         public Result<List<Room>> GetAll()
         {
             var rooms = _roomDal.GetAll().ToList();

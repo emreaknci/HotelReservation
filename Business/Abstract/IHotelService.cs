@@ -23,6 +23,6 @@ namespace Business.Abstract
         Task<Result<Hotel>> RemoveById(int id);
         Task<Result<List<Hotel>>> RemoveRange(List<RemoveHotelDto> hotels);
         Result<PaginationResult<Hotel>> GetAllPagination(BasePaginationRequest req);
-
+        Task<Result<bool>> ChangeHotelStatus(int hotelId);
     }
 }

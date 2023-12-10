@@ -31,7 +31,11 @@ namespace DataAccess.Concrete
                              Images = roomImages.Any()
                                         ? roomImages.Select(image => "/Images/" + image.ImageUrl).ToList()
                                         : defaultImages,
-                             Capacity = room.Capacity
+                             Capacity = room.Capacity,
+                             HotelName = room.Hotel.Name,
+                             IsDeleted = room.IsDeleted,
+                             Status = room.Status,
+                             Type = room.Type
 
                          };
             return filter == null
@@ -58,7 +62,10 @@ namespace DataAccess.Concrete
                                         ? roomImages.Select(image => "/Images/" + image.ImageUrl).ToList()
                                         : defaultImages,
                              Capacity = room.Capacity,  
-                             HotelName = room.Hotel.Name
+                             HotelName = room.Hotel.Name,
+                             IsDeleted = room.IsDeleted,
+                             Status = room.Status,
+                             Type = room.Type,
                          };
             return filter == null
                 ? result.ToList()

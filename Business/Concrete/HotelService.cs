@@ -67,6 +67,21 @@ namespace Business.Concrete
             throw new NotImplementedException();
         }
 
+        public async Task<Result<bool>> ChangeHotelStatus(int hotelId)
+        {
+            var hotel = await _hotelDal.GetByIdAsync(hotelId);
+            if (hotel == null)
+                return Result<bool>.FailureResult("Otel bulunamadı.");
+
+            hotel.Status = !hotel.Status;
+            _hotelDal.Update(hotel);
+            var saved = await _hotelDal.SaveAsync();
+
+            return saved > 0
+                ? Result<bool>.SuccessResult(hotel.Status, "Otel durumu güncellendi.")
+                : Result<bool>.FailureResult("Otel durumu güncellenemedi.");
+        }
+
         public Result<List<Hotel>> GetAll()
         {
             var hotels = _hotelDal.GetAll().ToList();
