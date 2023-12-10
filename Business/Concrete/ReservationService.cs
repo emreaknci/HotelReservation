@@ -159,8 +159,31 @@ namespace Business.Concrete
             return Result<Reservation>.SuccessResult(reservation, "Rezervasyon iptal edildi");
         }
 
+        public Result<List<ReservationListDto>> GetAllByCustomerId(int customerId)
+        {
+            var reservations = _reservationDal.GetReservationListDto(x=>x.CustomerId==customerId);
+            return reservations.Count == 0
+                ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
+                : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
 
+        public Result<List<ReservationListDto>> GetAllPastReservationsByCustomerId(int customerId)
+        {
+            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate < DateOnly.FromDateTime(DateTime.UtcNow));
 
+            return reservations.Count == 0
+                ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
+                : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
+
+        public Result<List<ReservationListDto>> GetAllActiveReservationsByCustomerId(int customerId)
+        {
+            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate >= DateOnly.FromDateTime(DateTime.UtcNow));
+
+            return reservations.Count == 0
+                ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
+                : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
         public Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto)
         {
             if (IsInvalidDateRange(dto.CheckInDate, dto.CheckOutDate))
@@ -223,5 +246,7 @@ namespace Business.Concrete
 
             return await _paymentService.PayAsync(paymentDto, DateOnly.FromDateTime((DateTime)reservation.CheckOutDate!), DateOnly.FromDateTime((DateTime)reservation.CheckInDate!));
         }
+
+       
     }
 }

@@ -42,6 +42,39 @@ public class ReservationController : BaseController
                 : Ok(result);
     }
 
+    [HttpGet("get-current-user-reservations")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public  IActionResult GetCurrentUserReservations()
+    {
+        var result = _reservationService.GetAllByCustomerId(GetCurrentUserId());
+        
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
+
+    [HttpGet("get-current-user-past-reservations")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetCurrentUserPastReservations()
+    {
+        var result = _reservationService.GetAllPastReservationsByCustomerId(GetCurrentUserId());
+
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
+
+    [HttpGet("get-current-user-active-reservations")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetCurrentUserActiveReservations()
+    {
+        var result = _reservationService.GetAllActiveReservationsByCustomerId(GetCurrentUserId());
+
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
+
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
     public async Task<IActionResult> AddAsync([FromBody] CreateReservationDto reservation)

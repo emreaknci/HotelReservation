@@ -15,6 +15,9 @@ namespace Business.Abstract
     {
         Result<List<Reservation>> GetAll();
         Task<Result<Reservation>> GetByIdAsync(int id);
+        Result<List<ReservationListDto>> GetAllByCustomerId(int customerId);
+        Result<List<ReservationListDto>> GetAllPastReservationsByCustomerId(int customerId);
+        Result<List<ReservationListDto>> GetAllActiveReservationsByCustomerId(int customerId);
         Task<Result<Reservation>> Reserve(CreateReservationDto reservation);
         Task<Result<Reservation>> CancelReservationById(int id);
         Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto);
