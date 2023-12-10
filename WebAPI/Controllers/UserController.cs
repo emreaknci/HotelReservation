@@ -32,5 +32,32 @@ namespace WebAPI.Controllers
                 : BadRequest(result);
 
         }
+        [HttpGet("get-all")]
+        public  IActionResult GetAll()
+        {
+            var result = _userService.GetAll();
+
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result);
+        }
+        [HttpGet("change-user-type")]
+        public async Task<IActionResult> ChangeUserType(int userId)
+        {
+            var result = await _userService.ChangeUserType(userId);
+
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result); 
+        }
+        [HttpGet("change-account-status")]
+        public async Task<IActionResult> ChangeAccountStatus(int userId)
+        {
+            var result = await _userService.ChangeAccountStatus(userId);
+
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result); 
+        }
     }
 }

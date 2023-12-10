@@ -34,12 +34,12 @@ namespace Business.Concrete
             var saved = await _userDal.SaveAsync();
             return saved == 0
                 ? Result<AppUser>.FailureResult("Kullanıcı eklenemedi")
-                : Result<AppUser>.SuccessResult(newUser,"Kullanıcı eklendi");
+                : Result<AppUser>.SuccessResult(newUser, "Kullanıcı eklendi");
         }
 
         public async Task<Result<bool>> ChangePassword(ChangeUserPasswordDto dto)
         {
-            var userToCheck =await GetByIdAsync(dto.Id);
+            var userToCheck = await GetByIdAsync(dto.Id);
             if (userToCheck == null)
                 return Result<bool>.FailureResult(userToCheck.Message);
 
@@ -47,7 +47,7 @@ namespace Business.Concrete
             if (!HashingHelper.VerifyPasswordHash(dto.OldPassword!, user.PasswordHash!, user.PasswordSalt!))
                 return Result<bool>.FailureResult("Mevcut şifrenizi doğru girdiğinizden emin olun.");
 
-            if(dto.NewPassword == dto.OldPassword)
+            if (dto.NewPassword == dto.OldPassword)
                 return Result<bool>.FailureResult("Yeni şifre mevcut şifreniz ile aynı olamaz!");
 
 
@@ -63,6 +63,19 @@ namespace Business.Concrete
                 : Result<bool>.SuccessResult(true, "Şifre değiştirildi");
         }
 
+        public async Task<Result<bool>> ChangeUserType(int userId)
+        {
+            var userToCheck = await _userDal.GetByIdAsync(userId);
+            if (userToCheck == null)
+                return Result<bool>.FailureResult("Kullanıcı bulunamadı");
+            userToCheck.UserType = userToCheck.UserType == UserType.Admin ? UserType.Customer : UserType.Admin;
+            _userDal.Update(userToCheck);
+            var saved = await _userDal.SaveAsync();
+            return saved == 0
+                ? Result<bool>.FailureResult("Kullanıcı tipi değiştirilemedi")
+                : Result<bool>.SuccessResult(true, "Kullanıcı tipi değiştirildi");
+        }
+
         public Result<List<AppUser>> GetAll()
         {
             var users = _userDal.GetAll().ToList();
@@ -73,8 +86,10 @@ namespace Business.Concrete
 
         public async Task<Result<AppUser>> GetByEmailAsync(string email)
         {
-            var user = await _userDal.GetAsync(x=>x.Email==email);
-            return user == null
+            var user = await _userDal.GetAsync(x => x.Email == email);
+
+
+            return user == null || user.IsDeleted
                 ? Result<AppUser>.FailureResult("Kullanıcı bulunamadı")
                 : Result<AppUser>.SuccessResult(user);
         }
@@ -82,9 +97,9 @@ namespace Business.Concrete
         public async Task<Result<AppUser>> GetByIdAsync(int id)
         {
             var user = await _userDal.GetByIdAsync(id);
-            return user==null
+            return user == null || user.IsDeleted
                 ? Result<AppUser>.FailureResult("Kullanıcı bulunamadı")
-                :Result<AppUser>.SuccessResult(user);
+                : Result<AppUser>.SuccessResult(user);
         }
 
         public async Task<Result<AppUser>> IsUserAdminAsync(int userId)
@@ -95,17 +110,29 @@ namespace Business.Concrete
                 : user.UserType == UserType.Admin
                     ? Result<AppUser>.SuccessResult(user)
                     : Result<AppUser>.FailureResult("Kullanıcı Yönetici Değil");
+        }
 
+        public async Task<Result<AppUser>> ChangeAccountStatus(int userId)
+        {
+            var userToCheck = await _userDal.GetByIdAsync(userId);
+            if (userToCheck == null)
+                return Result<AppUser>.FailureResult("Kullanıcı bulunamadı");
 
-            throw new NotImplementedException();
+            userToCheck.Status = !userToCheck.Status;
+            _userDal.Update(userToCheck);
+            var saved = await _userDal.SaveAsync();
+
+            return saved == 0
+                ? Result<AppUser>.FailureResult("Kullanıcı hesap durumu değiştirilemedi")
+                : Result<AppUser>.SuccessResult(userToCheck, "Kullanıcı hesap durumu değiştirildi");
         }
 
         public async Task<Result<UpdateUserDto>> UpdateAsync(UpdateUserDto user)
         {
             var userToBeUpdated = _mapper.Map<AppUser>(user);
             userToBeUpdated = _userDal.Update(userToBeUpdated);
-            
-            var saved= await _userDal.SaveAsync();
+
+            var saved = await _userDal.SaveAsync();
             return saved == 0
                 ? Result<UpdateUserDto>.FailureResult("Kullanıcı güncellenemedi")
                 : Result<UpdateUserDto>.SuccessResult(user, "Kullanıcı bilgileri güncellendi");

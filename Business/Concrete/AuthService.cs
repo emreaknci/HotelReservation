@@ -41,8 +41,12 @@ namespace Business.Concrete
         public async Task<Result<AppUser>> Login(LoginDto dto)
         {
             var userToCheck = await _userService.GetByEmailAsync(dto.Email);
+
             if (!userToCheck.Success)
                 return Result<AppUser>.FailureResult(userToCheck.Message);
+
+            if (!userToCheck.Data.Status)
+                return Result<AppUser>.FailureResult("Hesabınız askıya alınmış olabilir. Lütfen bizimle iletişime geçin.");
 
             var result = !HashingHelper.VerifyPasswordHash(dto.Password!, userToCheck.Data.PasswordHash!,
                                    userToCheck.Data.PasswordSalt!);

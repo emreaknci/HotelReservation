@@ -161,15 +161,21 @@ namespace Business.Concrete
 
         public Result<List<ReservationListDto>> GetAllByCustomerId(int customerId)
         {
-            var reservations = _reservationDal.GetReservationListDto(x=>x.CustomerId==customerId);
+            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId);
             return reservations.Count == 0
                 ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
                 : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
         }
-
+        public Result<List<ReservationListDto>> GetAllWithDetails()
+        {
+            var reservations = _reservationDal.GetReservationListDto();
+            return reservations.Count == 0
+                ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
+                               : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
         public Result<List<ReservationListDto>> GetAllPastReservationsByCustomerId(int customerId)
         {
-            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate < DateOnly.FromDateTime(DateTime.UtcNow));
+            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate <= DateOnly.FromDateTime(DateTime.UtcNow));
 
             return reservations.Count == 0
                 ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
@@ -178,12 +184,20 @@ namespace Business.Concrete
 
         public Result<List<ReservationListDto>> GetAllActiveReservationsByCustomerId(int customerId)
         {
-            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate >= DateOnly.FromDateTime(DateTime.UtcNow));
+            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate > DateOnly.FromDateTime(DateTime.UtcNow) && x.PaymentStatus == PaymentStatus.Paid.ToString());
+            return reservations.Count == 0
+                ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
+                : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
+        public Result<List<ReservationListDto>> GetAllCanceledReservationsByCustomerId(int customerId)
+        {
+            var reservations = _reservationDal.GetReservationListDto(x => x.CustomerId == customerId && x.CheckOutDate >= DateOnly.FromDateTime(DateTime.UtcNow) && x.PaymentStatus == PaymentStatus.Canceled.ToString());
 
             return reservations.Count == 0
                 ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
                 : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
         }
+
         public Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto)
         {
             if (IsInvalidDateRange(dto.CheckInDate, dto.CheckOutDate))
@@ -191,15 +205,19 @@ namespace Business.Concrete
                 return Result<string>.FailureResult("Geçerli bir giriş ve çıkış tarihi seçilmelidir.");
             }
 
-            if (!GetCustomerBookingInDateRange(dto.CustomerId, dto.CheckInDate, dto.CheckOutDate).IsNullOrEmpty())
+            var result = GetCustomerBookingInDateRange(dto.CustomerId, dto.CheckInDate, dto.CheckOutDate);
+
+            if (!result.Success)
             {
-                var message = GetCustomerBookingInDateRange(dto.CustomerId, dto.CheckInDate, dto.CheckOutDate);
+                var message = result.Message;
                 return Result<string>.FailureResult($"Seçilen tarihler arasında başka bir rezervasyonunuz bulunmaktadır. ({message})");
             }
 
-            if (IsRoomOccupied(dto.RoomId, dto.CheckInDate, dto.CheckOutDate))
+            result = IsRoomOccupied(dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
+            if (!result.Success)
             {
-                return Result<string>.FailureResult("Seçilen tarihlerde oda doludur.");
+                var message = result.Message;
+                return Result<string>.FailureResult($"Seçilen tarihlerde oda doludur. ({message})");
             }
 
             return Result<string>.SuccessResult(string.Empty);
@@ -212,7 +230,7 @@ namespace Business.Concrete
                    || DateOnly.FromDateTime(checkOutDate) < DateOnly.FromDateTime(DateTime.UtcNow);
         }
 
-        private string? GetCustomerBookingInDateRange(int customerId, DateTime checkInDate, DateTime checkOutDate)
+        private Result<string> GetCustomerBookingInDateRange(int customerId, DateTime checkInDate, DateTime checkOutDate)
         {
             var reservation = _reservationDal.GetAll()
                 .FirstOrDefault(x => x.CustomerId == customerId &&
@@ -220,15 +238,18 @@ namespace Business.Concrete
                                      x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
 
             return reservation != null
-                 ? $"{reservation.CheckInDate.Value.ToString("dd/MM/yyyy")} - {reservation.CheckOutDate.Value.ToString("dd/MM/yyyy")}"
-                : null;
+                ? Result<string>.FailureResult($"{reservation.CheckInDate.Value.ToString("dd/MM/yyyy")} - {reservation.CheckOutDate.Value.ToString("dd/MM/yyyy")}")
+                : Result<string>.SuccessResult(string.Empty);
         }
 
-        private bool IsRoomOccupied(int roomId, DateTime checkInDate, DateTime checkOutDate)
+        private Result<string> IsRoomOccupied(int roomId, DateTime checkInDate, DateTime checkOutDate)
         {
-            return _reservationDal.GetAll().Any(x => x.RoomId == roomId &&
+            var reservation = _reservationDal.GetAll().FirstOrDefault(x => x.RoomId == roomId &&
                                                      x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
                                                      x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
+            return reservation != null
+                ? Result<string>.FailureResult($"{reservation.CheckInDate.Value.ToString("dd/MM/yyyy")} - {reservation.CheckOutDate.Value.ToString("dd/MM/yyyy")}")
+                : Result<string>.SuccessResult(string.Empty);
         }
         private async Task<Result<Payment>> Pay(CreateReservationDto reservation, decimal roomPrice)
         {
@@ -246,7 +267,5 @@ namespace Business.Concrete
 
             return await _paymentService.PayAsync(paymentDto, DateOnly.FromDateTime((DateTime)reservation.CheckOutDate!), DateOnly.FromDateTime((DateTime)reservation.CheckInDate!));
         }
-
-       
     }
 }

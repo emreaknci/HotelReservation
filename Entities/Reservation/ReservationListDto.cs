@@ -21,6 +21,7 @@ namespace Entities.Reservation
         public string? RoomName { get; set; }
         public string? RoomType { get; set; }
         public int? CustomerId { get; set; }
+        public string? CustomerFullName { get; set; }
         public int? PaymentId { get; set; }
         public decimal? Amount { get; set; }
         public string? PaymentStatus { get; set; }

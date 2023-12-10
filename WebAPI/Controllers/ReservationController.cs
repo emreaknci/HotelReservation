@@ -42,6 +42,17 @@ public class ReservationController : BaseController
                 : Ok(result);
     }
 
+    [HttpGet("get-all-with-details")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    public IActionResult GetAllWithDetails()
+    {
+        var result = _reservationService.GetAllWithDetails();
+
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
+
     [HttpGet("get-current-user-reservations")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public  IActionResult GetCurrentUserReservations()
@@ -69,6 +80,16 @@ public class ReservationController : BaseController
     public IActionResult GetCurrentUserActiveReservations()
     {
         var result = _reservationService.GetAllActiveReservationsByCustomerId(GetCurrentUserId());
+
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
+    [HttpGet("get-current-user-canceled-reservations")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetCurrentUserCanceledReservations()
+    {
+        var result = _reservationService.GetAllCanceledReservationsByCustomerId(GetCurrentUserId());
 
         return result.Success
             ? Ok(result)

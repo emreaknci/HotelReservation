@@ -7,7 +7,7 @@ namespace DataAccess.Abstract
 {
     public interface IReservationDal : IGenericRepository<Reservation>
     {
-        List<ReservationListDto> GetReservationListDto(Expression<Func<ReservationListDto, bool>> filter = null);
+        List<ReservationListDto> GetReservationListDto(Func<ReservationListDto, bool> filter = null);
     }
 
 }

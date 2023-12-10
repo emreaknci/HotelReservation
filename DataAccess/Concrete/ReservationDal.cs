@@ -2,6 +2,7 @@
 using DataAccess.Abstract;
 using Entities.Reservation;
 using Entities.Reservations;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace DataAccess.Concrete
@@ -13,7 +14,7 @@ namespace DataAccess.Concrete
             Context = context;
         }
         private HotelReservationDbContext Context { get;set; }
-        public List<ReservationListDto> GetReservationListDto(Expression<Func<ReservationListDto, bool>>? filter = null)
+        public List<ReservationListDto> GetReservationListDto(Func<ReservationListDto, bool>? filter = null)
         {
             var result = from reservation in Context.Reservations
                          join room in Context.Rooms on reservation.RoomId equals room.Id
@@ -24,6 +25,7 @@ namespace DataAccess.Concrete
                          {
                              Id = reservation.Id,
                              CustomerId = user.Id,
+                             CustomerFullName = user.FirstName + " " + user.LastName,
                              Amount = payment.Amount,
                              HotelId = hotel.Id,
                              HotelName = hotel.Name,
@@ -33,12 +35,13 @@ namespace DataAccess.Concrete
                              CheckInDate = reservation.CheckInDate,
                              CheckOutDate = reservation.CheckOutDate,
                              PaymentId = payment.Id,
-                             PaymentStatus = payment.PaymentStatus.ToString(),                                                       
+                             PaymentStatus = payment.PaymentStatus.ToString(),    
+                            
                          };
 
             return filter == null
                 ? result.ToList()
-                : result.Where(filter).ToList();
+                : result.AsEnumerable().Where(filter).ToList();
         }
     }
 }
