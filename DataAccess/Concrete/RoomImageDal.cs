@@ -8,6 +8,16 @@ namespace DataAccess.Concrete
     {
         public RoomImageDal(HotelReservationDbContext context) : base(context)
         {
+            Context = context;
+        }
+        private readonly HotelReservationDbContext Context;
+        public bool RemoveAllByRoomId(int roomId)
+        {
+            var roomImages = Context.RoomImages.Where(x => x.RoomId == roomId).ToList();
+            if (roomImages == null || roomImages.Count==0)
+                return false;
+            RemoveRange(roomImages);
+            return true;
         }
     }
 }

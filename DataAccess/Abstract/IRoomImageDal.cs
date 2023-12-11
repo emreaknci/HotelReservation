@@ -10,5 +10,6 @@ namespace DataAccess.Abstract
 {
     public interface IRoomImageDal : IGenericRepository<RoomImage>
     {
+        bool RemoveAllByRoomId(int roomId);
     }
 }

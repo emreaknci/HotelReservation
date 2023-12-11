@@ -74,7 +74,7 @@ namespace DataAccess.Concrete
 
         public RoomDetailDto? GetRoomWithImagesById(int id, Expression<Func<RoomDetailDto, bool>> filter = null)
         {
-            var defaultImages = new List<string> { "/Images/defaultRoom.jpg" };
+            var defaultImages = new List<string> { "/Images/no-image.jpg" };
             var result = from room in _context.Rooms
                          join roomImage in _context.RoomImages on room.Id equals roomImage.RoomId into roomImages
                          where room.Id == id

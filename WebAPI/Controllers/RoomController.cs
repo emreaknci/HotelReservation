@@ -88,12 +88,12 @@ namespace WebAPI.Controllers
 
 
         [HttpPost]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddRoom([FromForm] CreateRoomDto room)
         {
             var result = await _roomService.AddAsync(room);
             return result.Success
-                ? Ok(result.Data)
+                ? Ok(result)
                 : BadRequest(result.Message);
         }
 
@@ -127,21 +127,30 @@ namespace WebAPI.Controllers
                 : BadRequest(result.Message);
         }
 
-        [HttpDelete]
+        [HttpDelete("[action]")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> RemoveRoom([FromBody] RemoveRoomDto room)
+        public async Task<IActionResult> SoftRemove([FromBody] RemoveRoomDto room)
         {
-            var result = await _roomService.Remove(room);
+            var result = await _roomService.SoftRemoveAsync(room);
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("[action]/{id}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> RemoveRoomById(int id)
+        public async Task<IActionResult> SoftRemoveById(int id)
         {
-            var result = await _roomService.RemoveById(id);
+            var result = await _roomService.SoftRemoveAsyncById(id);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+        [HttpDelete("[action]/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> RemoveById(int id)
+        {
+            var result = await _roomService.RemoveAsyncById(id);
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);

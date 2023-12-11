@@ -88,7 +88,6 @@ namespace Core.DataAccess
         {
 
             Table.RemoveRange(entities);
-            Context.SaveChanges();
             return entities;
         }
 

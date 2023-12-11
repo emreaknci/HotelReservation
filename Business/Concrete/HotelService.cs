@@ -4,9 +4,11 @@ using Core.Entities;
 using Core.Helpers;
 using Core.Utils.Results;
 using DataAccess.Abstract;
+using DataAccess.Concrete;
 using Entities.HotelImages;
 using Entities.Hotels;
 using Entities.Rooms;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace Business.Concrete
@@ -88,6 +90,23 @@ namespace Business.Concrete
             return Result<List<Hotel>>.SuccessResult(hotels, "Oteller listelendi.");
         }
 
+        public Result<List<HotelDto>> GetAllForDropdown()
+        {
+
+            var result = _hotelDal.GetAll()
+             .Select(x => new HotelDto
+             {
+                 Id = x.Id,
+                 Name = x.Name
+             })
+           .ToList();
+
+            return result == null || result.Count == 0
+                ? Result<List<HotelDto>>.FailureResult("Oteller bulunamadı.")
+                : Result<List<HotelDto>>.SuccessResult(result, "Oteller listelendi.");
+
+        }
+
         public Result<PaginationResult<Hotel>> GetAllPagination(BasePaginationRequest req)
         {
             var hotels = _hotelDal.GetWithPagination(req);
@@ -124,7 +143,7 @@ namespace Business.Concrete
             return Result<HotelDetailDto>.SuccessResult(hotel, "Otel getirildi.");
         }
 
-        public async Task<Result<Hotel>> Remove(RemoveHotelDto hotel)
+        public async Task<Result<Hotel>> SoftRemoveAsync(RemoveHotelDto hotel)
         {
             var hotelToBeDeleted = _mapper.Map<Hotel>(hotel);
             hotelToBeDeleted = await _hotelDal.SoftRemoveAsync(hotelToBeDeleted.Id);
@@ -132,7 +151,7 @@ namespace Business.Concrete
             return Result<Hotel>.SuccessResult(hotelToBeDeleted, "Otel silindi.");
         }
 
-        public async Task<Result<Hotel>> RemoveById(int id)
+        public async Task<Result<Hotel>> SoftRemoveAsyncById(int id)
         {
             var hotelToBeDeleted = await _hotelDal.SoftRemoveAsync(id);
             await _hotelDal.SaveAsync();
@@ -169,6 +188,31 @@ namespace Business.Concrete
 
         }
 
+        public async Task<Result<Hotel>> RemoveAsyncById(int id)
+        {
+            var hotel = await _hotelDal.GetByIdAsync(id);
 
+            if (hotel == null)
+                return Result<Hotel>.FailureResult("Otel bulunamadı");
+
+            var result = _hotelImageDal.RemoveAllByHotelId(id);
+            var saved = 0;
+            if (result)
+            {
+                saved = await _hotelImageDal.SaveAsync();
+                if (saved == 0)
+                    return Result<Hotel>.FailureResult("Otel resimleri silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.");
+            }
+
+            var roomsRemoveResult = await _roomService.RemoveRangeAsyncByHotelId(id);
+            if (!roomsRemoveResult.Success)
+                return Result<Hotel>.FailureResult(roomsRemoveResult.Message);
+
+            hotel = _hotelDal.Remove(hotel);
+            saved = await _hotelDal.SaveAsync();
+            return saved == 0
+                ? Result<Hotel>.FailureResult("Otel silinemedi")
+                : Result<Hotel>.SuccessResult(hotel, "Otel silindi");
+        }
     }
 }

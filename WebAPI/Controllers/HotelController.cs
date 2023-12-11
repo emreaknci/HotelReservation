@@ -21,7 +21,6 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet]
-
         public IActionResult GetAll()
         {
             var result = _hotelService.GetAll();
@@ -33,6 +32,14 @@ namespace WebAPI.Controllers
         public IActionResult GetAllWithImages()
         {
             var result = _hotelService.GetAllWithImages();
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+        [HttpGet("get-all-for-dropdown")]
+        public IActionResult GetAllForDropdown()
+        {
+            var result = _hotelService.GetAllForDropdown();
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);
@@ -72,7 +79,7 @@ namespace WebAPI.Controllers
                  : BadRequest(result.Message);
         }
         [HttpPost]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AddAsync([FromForm] CreateHotelDto hotel)
         {
             var result = await _hotelService.AddAsync(hotel);
@@ -113,22 +120,31 @@ namespace WebAPI.Controllers
 
         [HttpDelete()]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> Remove(RemoveHotelDto hotel)
+        public async Task<IActionResult> SoftRemove(RemoveHotelDto hotel)
         {
-            var result = await _hotelService.Remove(hotel);
+            var result = await _hotelService.SoftRemoveAsync(hotel);
             return result.Success
                  ? Ok(result)
-                 : NotFound(result.Message);
+                 : BadRequest(result.Message);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("[action]/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> SoftRemoveById(int id)
+        {
+            var result = await _hotelService.SoftRemoveAsyncById(id);
+            return result.Success
+                 ? Ok(result)
+                 : BadRequest(result.Message);
+        }
+        [HttpDelete("[action]/{id}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveById(int id)
         {
-            var result = await _hotelService.RemoveById(id);
+            var result = await _hotelService.RemoveAsyncById(id);
             return result.Success
                  ? Ok(result)
-                 : NotFound(result.Message);
+                 : BadRequest(result.Message);
         }
 
         [HttpDelete("remove-range")]

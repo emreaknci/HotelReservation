@@ -6,6 +6,7 @@ using Core.Utils.Results;
 using DataAccess.Abstract;
 using Entities.RoomImages;
 using Entities.Rooms;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,7 +141,7 @@ namespace Business.Concrete
                 : Result<List<RoomDetailDto>>.SuccessResult(rooms, "Odalar bulundu");
         }
 
-        public async Task<Result<Room>> Remove(RemoveRoomDto room)
+        public async Task<Result<Room>> SoftRemoveAsync(RemoveRoomDto room)
         {
             var roomToBeRemoved = _mapper.Map<Room>(room);
             roomToBeRemoved = await _roomDal.SoftRemoveAsync(roomToBeRemoved.Id);
@@ -151,7 +152,7 @@ namespace Business.Concrete
                 : Result<Room>.SuccessResult(roomToBeRemoved, "Oda silindi");
         }
 
-        public async Task<Result<Room>> RemoveById(int id)
+        public async Task<Result<Room>> SoftRemoveAsyncById(int id)
         {
             var roomToBeRemoved = await _roomDal.SoftRemoveAsync(id);
 
@@ -193,6 +194,54 @@ namespace Business.Concrete
             return saved == 0
                 ? Result<List<Room>>.FailureResult("Odalar güncellenemedi")
                 : Result<List<Room>>.SuccessResult(roomsToBeUpdated, "Odalar güncellendi");
+        }
+
+        public async Task<Result<Room>> RemoveAsyncById(int id)
+        {
+            var room = await _roomDal.GetByIdAsync(id);
+            if (room == null)
+                return Result<Room>.FailureResult("Oda bulunamadı");
+
+            var result = _roomImageDal.RemoveAllByRoomId(id);
+            var saved = 0;
+            if (result)
+            {
+                saved = await _roomImageDal.SaveAsync();
+                if (saved == 0)
+                    return Result<Room>.FailureResult("Oda resimleri silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.");
+            }
+
+            room = _roomDal.Remove(room);
+            saved = await _roomDal.SaveAsync();
+            return saved == 0
+                ? Result<Room>.FailureResult("Oda silinemedi")
+                : Result<Room>.SuccessResult(room, "Oda silindi");
+        }
+
+        public async Task<Result<List<Room>>> RemoveRangeAsyncByHotelId(int hotelId)
+        {
+            var rooms = _roomDal.GetAll().Where(x => x.HotelId == hotelId).ToList();
+            if (rooms == null || rooms.Count == 0)
+                return Result<List<Room>>.FailureResult("Otele ait oda bulunamadı");
+
+            foreach (var room in rooms)
+            {
+                var result = _roomImageDal.RemoveAllByRoomId(room.Id);
+                var saved = 0;
+                if (result)
+                {
+                    saved = await _roomImageDal.SaveAsync();
+                    if (saved == 0)
+                        return Result<List<Room>>.FailureResult("Oda resimleri silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.");
+                }
+            }
+
+            var roomsToBeRemoved = _roomDal.RemoveRange(rooms);
+            var savedRooms = await _roomDal.SaveAsync();
+            return savedRooms == 0
+                ? Result<List<Room>>.FailureResult("Odalar silinemedi")
+                : Result<List<Room>>.SuccessResult(roomsToBeRemoved, "Odalar silindi");
+
         }
     }
 }

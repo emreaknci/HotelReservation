@@ -22,8 +22,10 @@ namespace Business.Abstract
         Task<Result<List<Room>>> AddRangeAsync(List<CreateRoomDto> rooms);
         Task<Result<Room>> Update(UpdateRoomDto room);
         Task<Result<List<Room>>> UpdateRange(List<UpdateRoomDto> rooms);
-        Task<Result<Room>> Remove(RemoveRoomDto room);
-        Task<Result<Room>> RemoveById(int id);
+        Task<Result<Room>> SoftRemoveAsync(RemoveRoomDto room);
+        Task<Result<Room>> SoftRemoveAsyncById(int id);
+        Task<Result<Room>> RemoveAsyncById(int id);
+        Task<Result<List<Room>>> RemoveRangeAsyncByHotelId(int hotelId);
         Task<Result<List<Room>>> RemoveRange(List<RemoveRoomDto> rooms);
         Result<PaginationResult<Room>> GetAllPagination(BasePaginationRequest req);
         Task<Result<bool>> ChangeRoomStatus(int roomId);

@@ -12,5 +12,6 @@ namespace DataAccess.Abstract
 {
     public interface IHotelImageDal : IGenericRepository<HotelImage>
     {
+        bool RemoveAllByHotelId(int hotelId);
     }
 }
