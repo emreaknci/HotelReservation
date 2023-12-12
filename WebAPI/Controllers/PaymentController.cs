@@ -42,6 +42,17 @@ namespace WebAPI.Controllers
             return NotFound(result.Message);
         }
 
+        [HttpGet("get-all-in-date-range")]
+        public IActionResult GetAllInDateRange(DateTime startDate, DateTime endDate, PaymentStatus? status)
+        {
+            var result = _paymentService.GetAllInDateRange(startDate,endDate,status);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return NotFound(result.Message);
+        }
+
         [HttpGet("pagination")]
         public IActionResult GetAllPaymentsWithPagination([FromQuery] BasePaginationRequest req)
         {

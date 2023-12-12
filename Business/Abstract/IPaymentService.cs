@@ -13,9 +13,9 @@ namespace Business.Abstract
     {
         Result<List<Payment>> GetAll();
         Task<Result<Payment>> GetByIdAsync(int id);
+        Result<PaymentDto> GetAllInDateRange(DateTime startDate, DateTime endDate, PaymentStatus? status);
         Result<PaginationResult<Payment>> GetAllPagination(BasePaginationRequest req);
         Task<Result<Payment>> PayAsync(CreatePaymentDto payment, DateOnly checkOutDate, DateOnly checkInDate);
-        Task<Result<decimal>> GetAllTimeEarnings();
         Task<Result<string>> CancelPayment(int id);
 
     }

@@ -22,7 +22,7 @@ namespace Business.Concrete
 
         public async Task<Result<Payment>> PayAsync(CreatePaymentDto payment, DateOnly checkOutDate, DateOnly checkInDate)
         {
-            var amount = payment.Amount * (checkOutDate.DayNumber - checkInDate.DayNumber+1);
+            var amount = payment.Amount * (checkOutDate.DayNumber - checkInDate.DayNumber + 1);
             if (!payment.IsCardValid())
                 return Result<Payment>.FailureResult("Kredi kartı bilgileri eksik veya hatalı!");
 
@@ -75,5 +75,35 @@ namespace Business.Concrete
             await _paymentDal.SaveAsync();
             return Result<string>.SuccessResult("Ödeme iptal edildi");
         }
+
+        public Result<PaymentDto> GetAllInDateRange(DateTime startDate, DateTime endDate, PaymentStatus? status)
+        {
+            var payments = _paymentDal.GetAll().Where(x =>
+                 x.PaymentDate.Date >= startDate.Date &&
+                 x.PaymentDate.Date <= endDate.Date
+             );
+            if (status != null)
+                payments = payments.Where(x => x.PaymentStatus == status);
+
+            if (!payments.Any())
+                return Result<PaymentDto>.FailureResult("Belirtilen tarih aralığında ödeme bulunamadı");
+
+            var totalAmount = payments.Where(x => x.PaymentStatus == PaymentStatus.Paid).Sum(x => x.Amount);
+            var totalPaymentCount = payments.Count();
+            var totalPaidCount = payments.Count(x => x.PaymentStatus == PaymentStatus.Paid);
+            var totalCanceledCount = payments.Count(x => x.PaymentStatus == PaymentStatus.Canceled);
+
+            var paymentDto = new PaymentDto
+            {
+                Payments = payments.ToList(),
+                TotalAmount = totalAmount,
+                TotalPaymentCount = totalPaymentCount,
+                TotalPaidCount = totalPaidCount,
+                TotalCanceledCount = totalCanceledCount
+            };
+
+            return Result<PaymentDto>.SuccessResult(paymentDto, "Ödemeler listelendi");
+        }
+
     }
 }
