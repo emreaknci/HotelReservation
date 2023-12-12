@@ -20,7 +20,7 @@ namespace Business.Abstract
         Result<RoomDetailDto> GetByIdWithImages(int roomId);
         Task<Result<Room>> AddAsync(CreateRoomDto room);
         Task<Result<List<Room>>> AddRangeAsync(List<CreateRoomDto> rooms);
-        Task<Result<Room>> Update(UpdateRoomDto room);
+        Task<Result<Room>> UpdateAsync(UpdateRoomDto room);
         Task<Result<List<Room>>> UpdateRange(List<UpdateRoomDto> rooms);
         Task<Result<Room>> SoftRemoveAsync(RemoveRoomDto room);
         Task<Result<Room>> SoftRemoveAsyncById(int id);

@@ -4,6 +4,8 @@ using Core.Entities;
 using Core.Helpers;
 using Core.Utils.Results;
 using DataAccess.Abstract;
+using DataAccess.Concrete;
+using Entities.Hotels;
 using Entities.RoomImages;
 using Entities.Rooms;
 using Microsoft.EntityFrameworkCore;
@@ -173,16 +175,40 @@ namespace Business.Concrete
                 : Result<List<Room>>.SuccessResult(roomsToBeRemoved, "Odalar silindi");
         }
 
-        public async Task<Result<Room>> Update(UpdateRoomDto room)
+        public async Task<Result<Room>> UpdateAsync(UpdateRoomDto room)
         {
+            if(room.ImagePathsToDelete != null)
+            {
+                var result = _roomImageDal.RemoveRange(room.ImagePathsToDelete);
+                if (!result)
+                    return Result<Room>.FailureResult("Oda resimleri silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.");
+            }
+            var saved=0;
+            if(room.NewImages!=null)
+            {
+                foreach (var image in room.NewImages)
+                {
+                    var result = FileHelper.Upload(image);
+                    if (!result.Success)
+                        return Result<Room>.FailureResult(result.Message);
+                    var newImage = new RoomImage
+                    {
+                        RoomId = room.Id,
+                        ImageUrl = result.Data
+                    };
+                    await _roomImageDal.AddAsync(newImage);
+                    saved = await _roomImageDal.SaveAsync();
+                    if (saved == 0)
+                        return Result<Room>.FailureResult("Oda resimleri eklenemedi.");
+                }   
+            }
+
             var roomToBeUpdated = _mapper.Map<Room>(room);
             roomToBeUpdated = _roomDal.Update(roomToBeUpdated);
-
-            var saved = await _roomDal.SaveAsync();
+            saved = await _roomDal.SaveAsync();
             return saved == 0
                 ? Result<Room>.FailureResult("Oda güncellenemedi")
                 : Result<Room>.SuccessResult(roomToBeUpdated, "Oda güncellendi");
-
         }
 
         public async Task<Result<List<Room>>> UpdateRange(List<UpdateRoomDto> rooms)

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 
 namespace WebAPI.Controllers
@@ -48,6 +49,14 @@ namespace WebAPI.Controllers
         public IActionResult GetByIdWithImages(int id)
         {
             var result = _hotelService.GetByIdWithImages(id);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
+        [HttpGet("get-by-id-with-images-and-rooms/{id}")]
+        public IActionResult GetByIdWithImagesAndRooms(int id)
+        {
+            var result = _hotelService.GetByIdWithImagesAndRooms(id);
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);
@@ -100,9 +109,9 @@ namespace WebAPI.Controllers
 
         [HttpPut]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> Update([FromBody] UpdateHotelDto hotel)
+        public async Task<IActionResult> Update([FromForm] UpdateHotelDto hotel)
         {
-            var result = await _hotelService.Update(hotel);
+            var result = await _hotelService.UpdateAsync(hotel);
             return result.Success
                 ? Ok(result)
                 : BadRequest(result);

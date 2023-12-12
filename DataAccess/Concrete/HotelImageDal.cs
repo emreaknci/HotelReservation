@@ -39,5 +39,27 @@ namespace DataAccess.Concrete
 
             return true;
         }
+
+        public bool RemoveRange(List<string> imagePaths)
+        {
+            imagePaths = imagePaths.Select(x => x.Replace("/Images/", "")).ToList();
+            if (imagePaths == null || !imagePaths.Any())
+                return false;
+            var images = Context.HotelImages
+                .Where(x => imagePaths.Contains(x.ImageUrl)).ToList();
+            if (images == null || images.Count == 0)
+                return false;
+
+            RemoveRange(images);
+
+            foreach (var imagePath in images)
+            {
+                var result = FileHelper.Delete(imagePath.ImageUrl);
+                if (!result.Success)
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Entities.Hotels
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Entities.Hotels
 {
     public record UpdateHotelDto
     {
@@ -11,8 +13,9 @@
         public string? Email { get; init; }
         public string? Website { get; init; }
         public string? Description { get; init; }
-        public string? ImageUrl { get; init; }
         public int? Star { get; init; }
         public int? TotalRoomCount { get; init; }
+        public List<IFormFile>? NewImages{ get; set; }
+        public List<string>?  ImagePathsToDelete{ get; set; }
     }
 }

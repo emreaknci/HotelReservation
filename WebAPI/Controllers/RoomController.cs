@@ -109,9 +109,9 @@ namespace WebAPI.Controllers
 
         [HttpPut]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public async Task<IActionResult> UpdateRoom([FromBody] UpdateRoomDto room)
+        public async Task<IActionResult> UpdateRoom([FromForm] UpdateRoomDto room)
         {
-            var result = await _roomService.Update(room);
+            var result = await _roomService.UpdateAsync(room);
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);

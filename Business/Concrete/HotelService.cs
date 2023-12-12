@@ -129,7 +129,7 @@ namespace Business.Concrete
             return Result<Hotel>.SuccessResult(hotel, "Otel getirildi.");
         }
 
-        public Result<HotelDetailDto> GetByIdWithImages(int id)
+        public Result<HotelDetailDto> GetByIdWithImagesAndRooms(int id)
         {
             var hotel = _hotelDal.GetHotelWithImagesById(id);
 
@@ -141,6 +141,14 @@ namespace Business.Concrete
             var rooms = _roomService.GetRoomsWithImagesByHotelId(id);
             hotel.Rooms = rooms?.Data != null ? rooms.Data : null;
             return Result<HotelDetailDto>.SuccessResult(hotel, "Otel getirildi.");
+        }
+        public Result<HotelDetailDto> GetByIdWithImages(int id)
+        {
+            var hotel = _hotelDal.GetHotelWithImagesById(id);
+
+            return hotel == null
+             ? Result<HotelDetailDto>.FailureResult("Otel bulunamadı.")
+             : Result<HotelDetailDto>.SuccessResult(hotel, "Otel getirildi.");
         }
 
         public async Task<Result<Hotel>> SoftRemoveAsync(RemoveHotelDto hotel)
@@ -171,12 +179,42 @@ namespace Business.Concrete
             return Result<List<Hotel>>.SuccessResult(hotelsToBeDeleted, "Oteller silindi.");
         }
 
-        public async Task<Result<Hotel>> Update(UpdateHotelDto hotel)
+        public async Task<Result<Hotel>> UpdateAsync(UpdateHotelDto hotel)
         {
+           
+            if (hotel.ImagePathsToDelete != null)
+            {
+                var result = _hotelImageDal.RemoveRange(hotel.ImagePathsToDelete);
+                if (!result)
+                    return Result<Hotel>.FailureResult("Otel resimleri silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.");
+            }
+            var saved = 0;
+            if (hotel.NewImages != null)
+            {
+                foreach (var image in hotel.NewImages)
+                {
+                    var result = FileHelper.Upload(image);
+                    if (!result.Success)
+                        return Result<Hotel>.FailureResult(result.Message);
+                    var newImage = new HotelImage
+                    {
+                        HotelId = hotel.Id,
+                        ImageUrl = result.Data
+                    };
+                    newImage=await _hotelImageDal.AddAsync(newImage);
+                    saved = await _hotelImageDal.SaveAsync();
+                    if (saved < 0)
+                        return Result<Hotel>.FailureResult("Otel resimleri eklenemedi.");
+                }
+            }
+
             var hotelToBeUpdated = _mapper.Map<Hotel>(hotel);
             _hotelDal.Update(hotelToBeUpdated);
-            await _hotelDal.SaveAsync();
-            return Result<Hotel>.SuccessResult(hotelToBeUpdated, "Otel bilgileri güncellendi.");
+            saved=await _hotelDal.SaveAsync();
+
+            return saved == 0
+                ? Result<Hotel>.FailureResult("Otel güncellenemedi.")
+                : Result<Hotel>.SuccessResult(hotelToBeUpdated, "Otel güncellendi.");
         }
 
         public async Task<Result<List<Hotel>>> UpdateRange(List<UpdateHotelDto> hotels)

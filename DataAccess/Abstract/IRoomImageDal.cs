@@ -11,5 +11,7 @@ namespace DataAccess.Abstract
     public interface IRoomImageDal : IGenericRepository<RoomImage>
     {
         bool RemoveAllByRoomId(int roomId);
+        bool RemoveRange(List<string> imagePaths);
+
     }
 }
