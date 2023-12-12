@@ -70,7 +70,7 @@ namespace Core.Helpers
 
         public static Result<bool> Delete(string path)
         {
-            DeleteOldImageFile((_currentDirectory + path).Replace("/", "\\"));
+            DeleteOldImageFile((_currentDirectory +_folderName+ path).Replace("/", "\\"));
             return Result<bool>.SuccessResult(true, "Dosya silindi!");
         }
 

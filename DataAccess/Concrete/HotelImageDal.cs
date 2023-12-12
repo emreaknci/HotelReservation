@@ -1,4 +1,5 @@
 ﻿using Core.DataAccess;
+using Core.Helpers;
 using DataAccess.Abstract;
 using Entities.HotelImages;
 using Entities.Hotels;
@@ -22,9 +23,20 @@ namespace DataAccess.Concrete
         public bool RemoveAllByHotelId(int hotelId)
         {
             var hotelImages = Context.HotelImages.Where(x => x.HotelId == hotelId).ToList();
-            if (hotelImages == null || hotelImages.Count==0)
+            if (hotelImages == null || hotelImages.Count == 0)
                 return false;
+
+            var imageUrls = hotelImages.Select(x => x.ImageUrl).ToList();
+
             RemoveRange(hotelImages);
+
+            foreach (var imageUrl in imageUrls)
+            {
+                var result = FileHelper.Delete(imageUrl);
+                if (!result.Success)
+                    return false;
+            }
+
             return true;
         }
     }

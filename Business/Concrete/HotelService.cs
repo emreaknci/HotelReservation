@@ -204,9 +204,14 @@ namespace Business.Concrete
                     return Result<Hotel>.FailureResult("Otel resimleri silinirken bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.");
             }
 
-            var roomsRemoveResult = await _roomService.RemoveRangeAsyncByHotelId(id);
-            if (!roomsRemoveResult.Success)
-                return Result<Hotel>.FailureResult(roomsRemoveResult.Message);
+            var hotelRoomsResult = _roomService.GetRoomsByHotelId(id);
+            if (hotelRoomsResult.Success)
+            {
+                var roomsRemoveResult = await _roomService.RemoveRangeAsyncByHotelId(id);
+                if (!roomsRemoveResult.Success)
+                    return Result<Hotel>.FailureResult(roomsRemoveResult.Message);
+            }
+
 
             hotel = _hotelDal.Remove(hotel);
             saved = await _hotelDal.SaveAsync();
