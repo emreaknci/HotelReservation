@@ -27,6 +27,15 @@ public class ReservationController : BaseController
             ? Ok(result)
             : BadRequest(result.Message);
     }
+    [HttpGet("get-all-in-date-range")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    public IActionResult GetAllInDateRange(DateTime? startDate, DateTime? endDate, string? status)
+    {
+        var result = _reservationService.GetAllInDateRange(startDate,endDate,status); 
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
 
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]

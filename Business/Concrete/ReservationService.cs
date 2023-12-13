@@ -197,7 +197,20 @@ namespace Business.Concrete
                 ? Result<List<ReservationListDto>>.FailureResult("Rezervasyonlar bulunamadı")
                 : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
         }
+        public Result<List<ReservationListDto>> GetAllInDateRange(DateTime? startDate, DateTime? endDate, string? status)
+        {
+            var reservations = _reservationDal.GetReservationListDto(x =>
+            (startDate == null || x.CheckInDate >= DateOnly.FromDateTime((DateTime)startDate)) &&
+            (endDate == null || x.CheckOutDate <= DateOnly.FromDateTime((DateTime)endDate)) &&
+            (status == null || x.PaymentStatus == status)
+            );
 
+
+            if (!reservations.Any())
+                return Result<List<ReservationListDto>>.FailureResult("Belirtilen tarih aralığında rezervasyon bulunamadı");
+
+            return Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
         public Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto)
         {
             if (IsInvalidDateRange(dto.CheckInDate, dto.CheckOutDate))
@@ -233,7 +246,7 @@ namespace Business.Concrete
         private Result<string> GetCustomerBookingInDateRange(int customerId, DateTime checkInDate, DateTime checkOutDate)
         {
             var reservation = _reservationDal.GetAll()
-                .FirstOrDefault(x => x.CustomerId == customerId && x.Status==true &&
+                .FirstOrDefault(x => x.CustomerId == customerId && x.Status == true &&
                                      x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
                                      x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
 
@@ -244,7 +257,7 @@ namespace Business.Concrete
 
         private Result<string> IsRoomOccupied(int roomId, DateTime checkInDate, DateTime checkOutDate)
         {
-            var reservation = _reservationDal.GetAll().FirstOrDefault(x => x.RoomId == roomId && x.Status==true &&
+            var reservation = _reservationDal.GetAll().FirstOrDefault(x => x.RoomId == roomId && x.Status == true &&
                                                      x.CheckInDate <= DateOnly.FromDateTime(checkOutDate) &&
                                                      x.CheckOutDate >= DateOnly.FromDateTime(checkInDate));
             return reservation != null
@@ -267,5 +280,7 @@ namespace Business.Concrete
 
             return await _paymentService.PayAsync(paymentDto, DateOnly.FromDateTime((DateTime)reservation.CheckOutDate!), DateOnly.FromDateTime((DateTime)reservation.CheckInDate!));
         }
+
+
     }
 }
