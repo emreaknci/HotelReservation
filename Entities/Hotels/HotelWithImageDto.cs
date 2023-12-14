@@ -1,10 +1,10 @@
 ﻿namespace Entities.Hotels
 {
-    public record HotelDto
+    public class HotelWithImageDto
     {
         public int Id { get; set; }
         public string? Name { get; set; }
-        public bool? Status{ get; set; }
-
+        public string? ImagePath { get; set; }
     }
+
 }

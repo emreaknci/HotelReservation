@@ -97,7 +97,8 @@ namespace Business.Concrete
              .Select(x => new HotelDto
              {
                  Id = x.Id,
-                 Name = x.Name
+                 Name = x.Name,
+                 Status = x.Status
              })
            .ToList();
 
@@ -256,6 +257,14 @@ namespace Business.Concrete
             return saved == 0
                 ? Result<Hotel>.FailureResult("Otel silinemedi")
                 : Result<Hotel>.SuccessResult(hotel, "Otel silindi");
+        }
+
+        public Result<List<HotelWithImageDto>> GetHotelsWithFirstImage(int? hotelCount = null)
+        {
+            var hotels = _hotelDal.GetHotelsWithImage(hotelCount);
+            return hotels == null || hotels.Count == 0
+                ? Result<List<HotelWithImageDto>>.FailureResult("Oteller bulunamadı.")
+                : Result<List<HotelWithImageDto>>.SuccessResult(hotels, "Oteller listelendi.");
         }
     }
 }

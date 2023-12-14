@@ -211,6 +211,20 @@ namespace Business.Concrete
 
             return Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
         }
+        public Result<List<ReservationListDto>> GetUpcomingBookingsByCustomerId(int customerId)
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+
+            var reservations = _reservationDal.GetReservationListDto(x =>
+                x.CustomerId == customerId &&
+                x.CheckInDate > currentDate &&
+                x.PaymentStatus == PaymentStatus.Paid.ToString()
+            );
+
+            return !reservations.Any()
+                ? Result<List<ReservationListDto>>.FailureResult("Rezervasyon bulunamadı")
+                : Result<List<ReservationListDto>>.SuccessResult(reservations, "Rezervasyonlar bulundu");
+        }
         public Result<string> CheckCustomerBookingAndRoomOccupancy(ReservationCheckDto dto)
         {
             if (IsInvalidDateRange(dto.CheckInDate, dto.CheckOutDate))

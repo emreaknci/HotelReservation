@@ -61,6 +61,14 @@ namespace WebAPI.Controllers
                 ? Ok(result)
                 : BadRequest(result.Message);
         }
+        [HttpGet("get-hotels-with-first-image")]
+        public IActionResult GetHotelsWithFirstImage(int? hotelCount=null)
+        {
+            var result = _hotelService.GetHotelsWithFirstImage(hotelCount);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
         [HttpGet("change-hotel-status")]
         public async Task<IActionResult> ChangeHotelStatus(int hotelId)
         {

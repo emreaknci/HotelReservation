@@ -12,7 +12,8 @@ namespace DataAccess.Abstract
 {
     public interface IHotelDal : IGenericRepository<Hotel>
     {
-        List<HotelDetailDto> GetHotelsWithImages(Expression<Func<HotelDetailDto, bool>> filter = null);
-        HotelDetailDto GetHotelWithImagesById(int id, Expression<Func<HotelDetailDto, bool>> filter = null);
+        List<HotelDetailDto> GetHotelsWithImages(Expression<Func<HotelDetailDto, bool>>? filter = null);
+        HotelDetailDto GetHotelWithImagesById(int id, Expression<Func<HotelDetailDto, bool>>? filter = null);
+        List<HotelWithImageDto> GetHotelsWithImage(int? count = null, Expression<Func<HotelWithImageDto, bool>>? filter = null);
     }
 }

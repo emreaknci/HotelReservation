@@ -16,7 +16,7 @@ namespace Business.Abstract
         Task<Result<Hotel>> GetByIdAsync(int id);
         Result<HotelDetailDto> GetByIdWithImages(int id);
         Result<HotelDetailDto> GetByIdWithImagesAndRooms(int id);
-
+        Result<List<HotelWithImageDto>> GetHotelsWithFirstImage(int? hotelCount = null);
         Task<Result<Hotel>> AddAsync(CreateHotelDto hotel);
         Task<Result<List<Hotel>>> AddRangeAsync(List<CreateHotelDto> hotels);
         Task<Result<Hotel>> UpdateAsync(UpdateHotelDto hotel);

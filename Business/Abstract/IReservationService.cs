@@ -29,8 +29,7 @@ namespace Business.Abstract
         Task<Result<Reservation>> RemoveById(int id);
         Task<Result<List<Reservation>>> RemoveRange(List<RemoveReservationDto> reservation);
         Result<PaginationResult<Reservation>> GetAllPagination(BasePaginationRequest req);
-        Result<List<ReservationListDto>> GetAllInDateRange(DateTime? startDate, DateTime? endDate, string? status)
-;
-
+        Result<List<ReservationListDto>> GetAllInDateRange(DateTime? startDate, DateTime? endDate, string? status);
+        Result<List<ReservationListDto>> GetUpcomingBookingsByCustomerId(int customerId);
     }
 }

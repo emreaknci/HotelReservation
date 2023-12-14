@@ -28,10 +28,18 @@ namespace WebAPI.Controllers
                 ? Ok(result)
                 : BadRequest(result.Message);
         }
+        [HttpGet("get-latest-room-per-hotel")]
+        public IActionResult GetAllRooms(int? roomCount=0)
+        {
+            var result = _roomService.GetLatestRoomsPerHotel(roomCount);
+            return result.Success
+                ? Ok(result)
+                : BadRequest(result.Message);
+        }
         [HttpGet("get-rooms-with-images-by-hotel-id/{hotelId}")]
         public IActionResult GetAllRooms(int hotelId)
         {
-            var result = _roomService.GetRoomsWithImagesByHotelId(hotelId);
+            var result = _roomService.GetRoomsWithImages();
             return result.Success
                 ? Ok(result)
                 : BadRequest(result.Message);

@@ -36,6 +36,15 @@ public class ReservationController : BaseController
             ? Ok(result)
             : BadRequest(result.Message);
     }
+    [HttpGet("get-current-user-upcoming-bookings")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetUpcomingBookings()
+    {
+        var result = _reservationService.GetUpcomingBookingsByCustomerId(GetCurrentUserId());
+        return result.Success
+            ? Ok(result)
+            : BadRequest(result.Message);
+    }
 
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]

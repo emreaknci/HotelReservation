@@ -15,7 +15,7 @@ namespace DataAccess.Concrete
         private readonly HotelReservationDbContext _context;
 
 
-        public List<HotelDetailDto> GetHotelsWithImages(Expression<Func<HotelDetailDto, bool>> filter = null)
+        public List<HotelDetailDto> GetHotelsWithImages(Expression<Func<HotelDetailDto, bool>>? filter = null)
         {
             var defaultImages = new List<string> { "/Images/no-image.jpg" };
 
@@ -48,7 +48,7 @@ namespace DataAccess.Concrete
                 : result.Where(filter).ToList();
         }
 
-        public HotelDetailDto? GetHotelWithImagesById(int id, Expression<Func<HotelDetailDto, bool>> filter = null)
+        public HotelDetailDto? GetHotelWithImagesById(int id, Expression<Func<HotelDetailDto, bool>>? filter = null)
         {
             var defaultImages = new List<string> { "/Images/no-image.jpg" };
 
@@ -81,8 +81,27 @@ namespace DataAccess.Concrete
                 ? result.SingleOrDefault()
                 : result.SingleOrDefault(filter);
 
-            throw new NotImplementedException();
         }
+
+        public List<HotelWithImageDto> GetHotelsWithImage(int? count = null,Expression < Func<HotelWithImageDto, bool>>? filter = null)
+        {
+            var result = from hotel in _context.Hotels
+                        join hotelImage in _context.HotelImages on hotel.Id equals hotelImage.HotelId into hotelImages
+                        where hotelImages.Any() && hotel.Status
+                        select new HotelWithImageDto
+                        {
+                            Id = hotel.Id,
+                            Name = hotel.Name,
+                            ImagePath = "/Images/" + hotelImages.FirstOrDefault()!.ImageUrl,
+                        };
+
+            result = filter == null ? result : result.Where(filter);
+
+            result = (count.HasValue && count.Value > 0) ? result.Take(count.Value) : result;
+
+            return result.ToList();
+        }
+
     }
 
 }

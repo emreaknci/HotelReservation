@@ -269,5 +269,13 @@ namespace Business.Concrete
                 : Result<List<Room>>.SuccessResult(roomsToBeRemoved, "Odalar silindi");
 
         }
+
+        public Result<List<RoomDto>> GetLatestRoomsPerHotel(int? roomCount = null)
+        {
+            var rooms = _roomDal.GetLatestRoomsPerHotel(roomCount);
+            return rooms == null || rooms.Count == 0
+                ? Result<List<RoomDto>>.FailureResult("Oda bulunamadı.")
+                : Result<List<RoomDto>>.SuccessResult(rooms, "Odalar listelendi.");
+        }
     }
 }
