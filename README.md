@@ -22,13 +22,9 @@ Follow the steps below to set up and run the backend locally:
 
 #### Prerequisites
 
-Follow the steps below to set up and run the backend locally:
-
 - [.NET SDK](https://dotnet.microsoft.com/download) installed on your machine. (v8.0.1)
 - Code editor of your choice (e.g., Visual Studio, Visual Studio Code).
 - PostgreSQL database installed on your machine. You can download and install PostgreSQL from [here](https://www.postgresql.org/download/). (v15.5)
-
-
 
 
 ## Installation
